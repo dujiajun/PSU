@@ -1,7 +1,3 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
-
 #include "SSCSender.h"
 #include "utils.h"
 #include "SimpleIndexParameters.h"

@@ -1,13 +1,8 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
+#pragma once
 
-#ifndef PSU_PSU_SSCRECEIVER_H_
-#define PSU_PSU_SSCRECEIVER_H_
 #include "OSNReceiver.h"
 #include "OSNSender.h"
 #include "MPOPRFSender.h"
-//#include "cryptoTools/Common/CuckooIndex.h"
 #include "CuckooIndex.h"
 #include "cryptoTools/Common/Timer.h"
 #include <PSUReceiver.h>
@@ -22,7 +17,6 @@ class SSCReceiver : public PSUReceiver
 	std::vector<oc::block> receiver_set;
 	std::vector<oc::block> after_cuckoo_set;
 
-	//SimpleIndex simple;
 	size_t cuckoo_max_bin_size;
 	std::vector<std::vector<oc::block>> simple;
 
@@ -48,5 +42,3 @@ class SSCReceiver : public PSUReceiver
 	std::vector<oc::block> output(std::vector<oc::Channel>& chls);
 	void setTimer(oc::Timer& timer);
 };
-
-#endif //PSU_PSU_SSCRECEIVER_H_

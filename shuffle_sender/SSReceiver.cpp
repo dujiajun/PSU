@@ -73,7 +73,7 @@ std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 		  for (size_t j = 0; j < receiver_set_size; j++)
 			  tmp[j] = _mm_xor_si128(shares[i], receiver_set[j]);
 		  auto oprfs = mp_oprf_sender.get_oprf(tmp);
-		  chls[tid].send(oprfs);
+		  chls[tid].asyncSend(std::move(oprfs));
 	  }
 	};
 	vector<thread> thrds(num_threads);

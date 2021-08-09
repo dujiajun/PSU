@@ -35,14 +35,13 @@ void SRSSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t re
 		for (size_t j = bin.mBinRealSizes; j < simple.mMaxBinSize; j++)
 			bin.items.push_back(AllOneBlock);
 	}
-
 }
 
 void SRSSender::output(std::vector<oc::Channel>& chls)
 {
+	
 	PRNG prng(oc::toBlock(123));
 	vector<vector<block>> shares(simple.mNumBins);
-
 	auto num_threads = chls.size();
 	std::vector<std::thread> thrds(num_threads);
 
@@ -52,7 +51,6 @@ void SRSSender::output(std::vector<oc::Channel>& chls)
 		{
 			shares[j] = runPermuteShare(tid, simple.mBins[j].items.size(), chls);
 		}
-
 	};
 
 	for (u64 i = 0; i < thrds.size(); ++i)
@@ -64,7 +62,7 @@ void SRSSender::output(std::vector<oc::Channel>& chls)
 
 	auto total_count = simple.mNumBins * simple.mMaxBinSize;
 	auto tmp_count = log2ceil(total_count);
-	cout << "Sender: " << total_count << " " << tmp_count << endl;
+
 	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(1ull << tmp_count);
 	runMPOPRF(chls, toBlock(123456), 1ull << tmp_count, tmp_count, get_mp_oprf_width(1ull << tmp_count), hashLengthInBytes, 32, 1 << 8, 1 << 8);
 	vector<array<block, 2>> msgs(simple.mMaxBinSize * simple.mNumBins);

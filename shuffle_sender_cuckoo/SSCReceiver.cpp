@@ -1,7 +1,3 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
-
 #include "SSCReceiver.h"
 #include "utils.h"
 #include "SimpleIndexParameters.h"
@@ -37,10 +33,8 @@ void SSCReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, siz
 
 	size_t cuckoo_hash_num = 4;
 	size_t cuckoo_bin_num = ceil(1.09 * sender_size);
-	cuckoo_max_bin_size = getSimpleBinSize(sender_set_size, receiver_set_size);
-	//cout << "Receiver: " << getSimpleBinSize(sender_set_size, receiver_set_size) << endl;
+	
 	simple.resize(cuckoo_bin_num);
-	//simple.init(cuckoo_bin_num, getSimpleBinSize(sender_set_size, receiver_set_size));
 	vector<block> tmp(receiver_set_size);
 	for (auto& y : receiver_set)
 	{
@@ -48,10 +42,16 @@ void SSCReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, siz
 		{
 			size_t idx = CuckooIndex<ThreadSafe>::getHash(y, i, cuckoo_bin_num);
 			simple[idx].emplace_back(y);
-			assert(simple[idx].size() <= cuckoo_max_bin_size);
 		}
 	}
-	//simple.insertItems(tmp, 1);
+	
+	cuckoo_max_bin_size = 0;// getSimpleBinSize(sender_set_size, receiver_set_size);
+	for (auto& bin : simple)
+	{
+		if (bin.size() > cuckoo_max_bin_size)
+			cuckoo_max_bin_size = bin.size();
+	}
+
 	shuffle_size = cuckoo_bin_num;
 	
 	osn_sender.init(shuffle_size, 1);
@@ -105,13 +105,12 @@ std::vector<oc::block> SSCReceiver::output(std::vector<oc::Channel>& chls)
 		  size_t bin_idx = pi_out[i];
 		  size_t bin_oprf_size = simple[bin_idx].size() * hashLengthInBytes;
 		  size_t buff_start = (i - start_idx) * cuckoo_max_bin_size * hashLengthInBytes;
-		  //cout << tmp.size() << " " << oprfs.size() << " " << send_buff.size() << endl;
 		  memcpy(send_buff.data() + buff_start, oprfs.data() + offset * hashLengthInBytes, bin_oprf_size);
 		  prng.get<u8>(send_buff.data() + buff_start + bin_oprf_size,
 			  cuckoo_max_bin_size * hashLengthInBytes - bin_oprf_size);
 		  offset += simple[bin_idx].size();
 	  }
-	  chls[tid].send(send_buff);
+	  chls[tid].asyncSend(std::move(send_buff));
 	};
 	vector<thread> thrds(num_threads);
 	for (size_t i = 0; i < num_threads; i++)

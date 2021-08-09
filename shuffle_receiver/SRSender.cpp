@@ -35,9 +35,9 @@ void SRSender::output(std::vector<oc::Channel>& chls)
 	PRNG prng(oc::toBlock(123));
 
 	auto share = runPermuteShare(chls);
-
+	timer->setTimePoint("after runPermuteShare");
 	runMPOPRF(chls, toBlock(123456), shuffle_size, log2ceil(shuffle_size), get_mp_oprf_width(shuffle_size), get_mp_oprf_hash_in_bytes(shuffle_size), 32, 1 << 8, 1 << 8);
-
+	timer->setTimePoint("after runMpOprf");
 	size_t num_threads = chls.size();
 	auto routine = [&](size_t tid)
 	{
@@ -46,11 +46,8 @@ void SRSender::output(std::vector<oc::Channel>& chls)
 			vector<block> tmp(share.size());
 			for (size_t i = 0; i < share.size(); i++)
 				tmp[i] = _mm_xor_si128(sender_set[x], share[i]);
-			//timer->setTimePoint("sender before get single oprf");
 			auto oprfs = mp_oprf_sender.get_oprf(tmp);
-			//timer->setTimePoint("sender after get single oprf");
-			chls[tid].send(oprfs);
-			//timer->setTimePoint("sender after send single oprf");
+			chls[tid].asyncSend(std::move(oprfs));
 		}
 	};
 	vector<thread> thrds(num_threads);
@@ -58,8 +55,8 @@ void SRSender::output(std::vector<oc::Channel>& chls)
 		thrds[i] = std::thread(routine, i);
 	for (size_t i = 0; i < num_threads; i++)
 		thrds[i].join();
-
-	vector<array<block, 2>> msgs(share.size());
+	timer->setTimePoint("after compute oprf");
+	vector<array<block, 2>> msgs(sender_set_size);
 	for (size_t i = 0; i < sender_set.size(); i++)
 	{
 		msgs[i][0] = sender_set[i];

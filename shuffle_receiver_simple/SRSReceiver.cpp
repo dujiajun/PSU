@@ -71,7 +71,7 @@ std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
 	{
 		tmp_share[i] = shares[i / simple.mMaxBinSize][i % simple.mMaxBinSize];
 	}
-	cout << "Receiver: " << total_count << " " << tmp_count << endl;
+
 	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(1ull << tmp_count);
 	u8* oprfs = runMpOprf(chls, tmp_share, toBlock(123456), 1ull << tmp_count, tmp_count, get_mp_oprf_width(1ull << tmp_count), hashLengthInBytes, 32, 1 << 8, 1 << 8);
 	timer->setTimePoint("after runMpOprf");
@@ -86,9 +86,7 @@ std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
 		{
 			auto& bin = simple.mBins[k];
 			auto& share = shares[k];
-
 			chls[tid].recv(recv_oprfs);
-			//timer->setTimePoint("after recv oprf");
 			vector<PRF> recv_oprfs_v(simple.mMaxBinSize * share.size());
 			for (size_t i = 0; i < recv_oprfs_v.size(); i++)
 			{
@@ -117,7 +115,6 @@ std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
 					choices[k * simple.mMaxBinSize + x] = 0;
 				}
 			}
-			//timer->setTimePoint("after compare oprf");
 		}
 	};
 	for (size_t i = 0; i < num_threads; i++)

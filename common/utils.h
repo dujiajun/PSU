@@ -1,10 +1,4 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
-
-#ifndef PSU_PSU_UTILS_H_
-#define PSU_PSU_UTILS_H_
-
+#pragma once
 
 #include "cryptoTools/Common/Defines.h"
 
@@ -61,4 +55,4 @@ struct PRF
 inline bool operator<(__m128i a, __m128i b);
 
 void PrintBuffer(void* pBuff, unsigned int nLen);
-#endif //PSU_PSU_UTILS_H_
+

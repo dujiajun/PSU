@@ -50,10 +50,6 @@ void sender() {
 
 	cout << IoStream::lock;
 	cout << "Sender:\n";
-	/*for (auto& i : senderSet)
-	{
-		cout << i << endl;
-	}*/
 	cout << timer << endl;
 	size_t sent = 0, recv = 0;
 	for (auto& chl : chls)
@@ -78,7 +74,7 @@ void receiver() {
 	PRNG prng(toBlock(123));
 
 	for (auto i = 0; i < receiver_size; ++i) {
-		receiverSet[i] = toBlock(i + 1);
+		receiverSet[i] = prng.get<block>();
 	}
 
 	SSCReceiver receiver;
@@ -91,10 +87,6 @@ void receiver() {
 
 	cout << IoStream::lock;
 	cout << "Receiver:\n";
-	/*for (auto& i : res)
-	{
-		cout << i << endl;
-	}*/
 	cout << res.size() << endl;
 	cout << endl;
 	cout << timer;

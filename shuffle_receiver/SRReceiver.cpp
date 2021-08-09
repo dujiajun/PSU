@@ -45,7 +45,7 @@ std::vector<block> SRReceiver::output(std::vector<Channel>& chls)
 	auto oprfs = runMpOprf(chls, share, toBlock(123456), shuffle_size, log2ceil(shuffle_size), get_mp_oprf_width(shuffle_size), hashLengthInBytes, 32, 1 << 8, 1 << 8);
 	timer->setTimePoint("after runMpOprf");
 
-	BitVector choices(share.size());
+	BitVector choices(sender_set_size);
 
 	size_t num_threads = chls.size();
 	auto routine = [&](size_t tid)
@@ -57,7 +57,7 @@ std::vector<block> SRReceiver::output(std::vector<Channel>& chls)
 			set<PRF> recved_oprfs_set;
 			vector<u8> recv_oprfs(share.size() * hashLengthInBytes);
 			chls[tid].recv(recv_oprfs);
-			//timer->setTimePoint("after recv oprf");
+
 			for (size_t j = 0; j < share.size(); j++)
 			{
 				recved_oprfs_set.insert(PRF(hashLengthInBytes, recv_oprfs.data() + j * hashLengthInBytes));
@@ -70,7 +70,6 @@ std::vector<block> SRReceiver::output(std::vector<Channel>& chls)
 					flag = true;
 				}
 			}
-			//timer->setTimePoint("after find oprf");
 			if (flag == false)
 			{
 				choices[i] = 0;
@@ -85,7 +84,7 @@ std::vector<block> SRReceiver::output(std::vector<Channel>& chls)
 		thrds[i].join();
 	delete[] oprfs;
 	timer->setTimePoint("after compare oprf");
-	vector<block> msgs(share.size());
+	vector<block> msgs(sender_set_size);
 	ot_receiver.receiveChosen(choices, msgs, prng, chls[0]);
 
 	for (auto& msg : msgs)

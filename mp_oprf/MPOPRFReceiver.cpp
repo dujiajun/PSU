@@ -169,7 +169,7 @@ u8* MPOPRFReceiver::run(PRNG& prng, std::vector<Channel>& chls, const std::vecto
 					sentMatrix[i * heightInBytes + j] ^= matrixA[i][j] ^ matrixDelta[i][j];
 				}
 			}
-			chls[tid].send(sentMatrix);
+			chls[tid].asyncSend(std::move(sentMatrix));
 
 			///////////////// Compute hash inputs (transposed) /////////////////////
 
