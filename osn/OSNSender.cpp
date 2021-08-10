@@ -97,7 +97,7 @@ void OSNSender::silent_ot_recv(osuCrypto::BitVector& choices,
 {
 	//std::cout << "\n Silent OT receiver!!\n";
 	size_t num_threads = chls.size();
-	/*size_t total_len = choices.size();
+	size_t total_len = choices.size();
 	vector<BitVector> tmpChoices(num_threads);
 	auto routine = [&](size_t tid)
 	{
@@ -125,25 +125,27 @@ void OSNSender::silent_ot_recv(osuCrypto::BitVector& choices,
 		thrds[t].join();
 	choices.resize(0);
 	for (size_t t = 0; t < num_threads; t++)
-		choices.append(tmpChoices[t]);*/
+		choices.append(tmpChoices[t]);
 
-	osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+	/*osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	osuCrypto::u64 numOTs = choices.size();
 
 	osuCrypto::SilentOtExtReceiver recv;
 	recv.configure(numOTs, 2, num_threads);
 
-	recv.silentReceive(choices, recvMsg, prng0, chls[0]);
+	recv.silentReceive(choices, recvMsg, prng0, chls[0]);*/
 }
 
 void OSNSender::rand_ot_recv(osuCrypto::BitVector& choices,
 	std::vector<osuCrypto::block>& recvMsg,
 	std::vector<oc::Channel>& chls)
 {
+	//std::cout << "\n Ot receiver!!\n";
+
 	size_t num_threads = chls.size();
-	/*size_t total_len = choices.size();
+	size_t total_len = choices.size();
 	vector<BitVector> tmpChoices(num_threads);
-	std::cout << "\n Ot receiver!!\n";
+	
 	auto routine = [&](size_t tid)
 	{
 
@@ -180,8 +182,8 @@ void OSNSender::rand_ot_recv(osuCrypto::BitVector& choices,
 	choices.resize(0);
 	for (size_t t = 0; t < num_threads; t++)
 		choices.append(tmpChoices[t]);
-		*/
-	osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+		
+	/*osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	osuCrypto::u64 numOTs = choices.size(); // input.length();
 	std::vector<osuCrypto::block> baseRecv(128);
 	std::vector<std::array<osuCrypto::block, 2>> baseSend(128);
@@ -195,7 +197,7 @@ void OSNSender::rand_ot_recv(osuCrypto::BitVector& choices,
 	osuCrypto::IknpOtExtReceiver recv;
 	recv.setBaseOts(baseSend);
 
-	recv.receive(choices, recvMsg, prng0, chls[0]);
+	recv.receive(choices, recvMsg, prng0, chls[0]);*/
 }
 
 OSNSender::OSNSender(size_t size, int ot_type) : size(size), ot_type(ot_type)

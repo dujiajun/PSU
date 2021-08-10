@@ -12,7 +12,7 @@ void OSNReceiver::rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sen
 	//std::cout << "\n OT sender!! \n";
 
 	size_t num_threads = chls.size();
-	/*size_t total_len = sendMsg.size();
+	size_t total_len = sendMsg.size();
 	auto routine = [&](size_t tid)
 	{
 	  size_t start_idx = total_len * tid / num_threads;
@@ -38,8 +38,9 @@ void OSNReceiver::rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sen
 	for (size_t t = 0; t < num_threads; t++)
 		thrds[t] = std::thread(routine, t);
 	for (size_t t = 0; t < num_threads; t++)
-		thrds[t].join();*/
-	osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
+		thrds[t].join();
+	
+	/*osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
 
 	std::vector<osuCrypto::block> baseRecv(128);
 	osuCrypto::DefaultBaseOT baseOTs;
@@ -48,7 +49,7 @@ void OSNReceiver::rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sen
 	osuCrypto::IknpOtExtSender sender;
 	baseOTs.receive(baseChoice, baseRecv, prng1, chls[0], num_threads);
 	sender.setBaseOts(baseRecv, baseChoice);
-	sender.send(sendMsg, prng1, chls[0]);
+	sender.send(sendMsg, prng1, chls[0]);*/
 }
 
 void OSNReceiver::silent_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sendMsg, std::vector<oc::Channel>& chls)
@@ -56,7 +57,7 @@ void OSNReceiver::silent_ot_send(std::vector<std::array<osuCrypto::block, 2>>& s
 	//std::cout << "\n Silent OT sender!! \n";
 
 	size_t num_threads = chls.size();
-	/*size_t total_len = sendMsg.size();
+	size_t total_len = sendMsg.size();
 	auto routine = [&](size_t tid)
 	{
 	  size_t start_idx = total_len * tid / num_threads;
@@ -78,14 +79,14 @@ void OSNReceiver::silent_ot_send(std::vector<std::array<osuCrypto::block, 2>>& s
 	for (size_t t = 0; t < num_threads; t++)
 		thrds[t] = std::thread(routine, t);
 	for (size_t t = 0; t < num_threads; t++)
-		thrds[t].join();*/
+		thrds[t].join();
 
-	osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
+	/*osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
 	osuCrypto::u64 numOTs = sendMsg.size();
 
 	osuCrypto::SilentOtExtSender sender;
 	sender.configure(numOTs, 2, num_threads);
-	sender.silentSend(sendMsg, prng1, chls[0]);
+	sender.silentSend(sendMsg, prng1, chls[0]);*/
 }
 
 std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, std::vector<oc::Channel>& chls)

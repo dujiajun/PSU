@@ -101,13 +101,13 @@ u8* MPOPRFReceiver::run(PRNG& prng, std::vector<Channel>& chls, const std::vecto
 	// std::cout << "Receiver set transformed\n";
 	//timer->setTimePoint("Receiver set transformed");
 
-	size_t num_buckets = width / widthBucket1;
+	size_t num_buckets = ceil(1.0 * width / widthBucket1);
 
 	auto routine2 = [&](size_t tid)
 	{
 		AES aes;
-		size_t start_idx = num_buckets * tid / num_threads * width;
-		size_t end_idx = num_buckets * (tid + 1) / num_threads * width;
+		size_t start_idx = num_buckets * tid / num_threads * widthBucket1;
+		size_t end_idx = num_buckets * (tid + 1) / num_threads * widthBucket1;
 		end_idx = end_idx > width ? width : end_idx;
 
 		vector<block> randomLocations(bucket1);

@@ -38,12 +38,12 @@ void osuCrypto::MPOPRFSender::run(PRNG& prng, std::vector<Channel>& chls)
 	size_t num_threads = chls.size();
 	vector<thread> thrds(num_threads);
 
-	size_t num_buckets = width / widthBucket1;
+	size_t num_buckets = ceil(1.0 * width / widthBucket1);
 
 	auto routine = [&](size_t tid)
 	{
-		size_t start_idx = num_buckets * tid / num_threads * width;
-		size_t end_idx = num_buckets * (tid + 1) / num_threads * width;
+		size_t start_idx = num_buckets * tid / num_threads * widthBucket1;
+		size_t end_idx = num_buckets * (tid + 1) / num_threads * widthBucket1;
 		end_idx = end_idx > width ? width : end_idx;
 
 		for (auto wLeft = start_idx; wLeft < end_idx; wLeft += widthBucket1)
