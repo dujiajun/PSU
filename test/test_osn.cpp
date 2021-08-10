@@ -36,12 +36,13 @@ void sender(size_t size)
 	osn.init(size, 1);
 	Timer timer;
 	osn.setTimer(timer);
-	timer.reset();
+	timer.setTimePoint("before run_osn");
 	sender_shares = osn.run_osn(chls);
 	/*for (size_t i = 0; i < shares.size(); i++)
 	{
 		cout << i << " " << shares[i] << endl;
 	}*/
+	timer.setTimePoint("after run_osn");
 	permutation = osn.dest;
 	cout << IoStream::lock;
 	cout << "Sender:" << endl;
@@ -76,8 +77,9 @@ void receiver(size_t size)
 	osn.init(receiver_set.size(), 1);
 	Timer timer;
 	osn.setTimer(timer);
-	timer.reset();
+	timer.setTimePoint("before run_osn");
 	receiver_shares = osn.run_osn(receiver_set, chls);
+	timer.setTimePoint("after run_osn");
 	/*
 	for (size_t i = 0; i < shares.size(); i++)
 	{
