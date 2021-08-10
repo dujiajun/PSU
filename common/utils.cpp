@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cstring>
 // True if a < b, for unsigned 128 bit integers
-inline bool operator<(__m128i a, __m128i b)
+/*inline bool operator<(__m128i a, __m128i b)
 {
 	// Flip the sign bits in both arguments.
 	// Transforms 0 into -128 = minimum for signed bytes,
@@ -19,7 +19,7 @@ inline bool operator<(__m128i a, __m128i b)
 	const int less = _mm_movemask_epi8(_mm_cmplt_epi8(a, b));
 	const int greater = _mm_movemask_epi8(_mm_cmpgt_epi8(a, b));
 	return less > greater;
-}
+}*/
 
 void PrintBuffer(void* pBuff, unsigned int nLen)
 {

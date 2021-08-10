@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cryptoTools/Common/Defines.h"
+#include <cstring>
 
 struct PRF
 	{
@@ -52,7 +53,7 @@ struct PRF
 		}
 	};
 
-inline bool operator<(__m128i a, __m128i b);
+//inline bool operator<(__m128i a, __m128i b);
 
 void PrintBuffer(void* pBuff, unsigned int nLen);
 

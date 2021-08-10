@@ -1,4 +1,8 @@
 #pragma once
+
+#include <cstddef>
+#include <cstdint>
+
 inline size_t get_mp_oprf_width(size_t receiver_size, size_t sender_size)
 {
 	if (sender_size >= 1ull << 12)

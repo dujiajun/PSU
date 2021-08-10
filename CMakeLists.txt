@@ -1,28 +1,28 @@
 cmake_minimum_required(VERSION 3.19)
 project(common)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 14)
 
 if (MSVC)
     set(OS "win")
-    set(Boost_INCLUDE_DIR libOTe/cryptoTools/thirdparty/${OS}/include/boost-1_76)
+    set(BOOST_INCLUDEDIR libOTe/cryptoTools/thirdparty/${OS}/include/boost-1_76)
+    find_package(Boost)
+    set(MY_LIBS libOTe cryptoTools relic_s)
 else ()
     set(OS "unix")
-    set(Boost_INCLUDE_DIR libOTe/cryptoTools/thirdparty/${OS}/include/)
+    set(BOOST_INCLUDEDIR libOTe/cryptoTools/thirdparty/${OS}/include/)
+    set(BOOST_COMPOENTS filesystem system thread atomic regex)
+    add_compile_options(-maes -msse2 -msse3 -mssse3 -msse4.1 -mpclmul)
+    find_package(Boost COMPONENTS REQUIRED ${BOOST_COMPOENTS})
+    set(MY_LIBS libOTe cryptoTools relic)
 endif ()
 
-include_directories(libOTe/out/install/${CMAKE_BUILD_TYPE}/include)
+include_directories(libOTe/out/install/${PRESET_NAME}/include)
 include_directories(libOTe/cryptoTools/thirdparty/${OS}/include/)
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(${BOOST_INCLUDEDIR})
 
-link_directories(libOTe/out/install/${CMAKE_BUILD_TYPE}/lib)
+link_directories(libOTe/out/install/${PRESET_NAME}/lib)
 link_directories(libOTe/cryptoTools/thirdparty/${OS}/lib/)
-
-find_library(cryptoTools cryptoTools)
-find_library(libOTe libOTe)
-find_library(relic relic_s)
-
-find_package(Boost)
 
 include_directories(osn)
 include_directories(mp_oprf)
@@ -93,9 +93,9 @@ add_executable(ShuffleSender_Cuckoo
 add_executable(test_osn
         test/test_osn.cpp)
 
-target_link_libraries(ShuffleReceiver common osn mp_oprf libOTe cryptoTools relic_s)
-target_link_libraries(ShuffleReceiver_Cuckoo common osn mp_oprf libOTe cryptoTools relic_s)
-target_link_libraries(ShuffleReceiver_Simple common osn mp_oprf libOTe cryptoTools relic_s)
-target_link_libraries(ShuffleSender common osn mp_oprf libOTe cryptoTools relic_s)
-target_link_libraries(ShuffleSender_Cuckoo common osn mp_oprf libOTe cryptoTools relic_s)
-target_link_libraries(test_osn osn libOTe cryptoTools relic_s)
+target_link_libraries(ShuffleReceiver common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(ShuffleReceiver_Cuckoo common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(ShuffleReceiver_Simple common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(ShuffleSender common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(ShuffleSender_Cuckoo common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(test_osn osn ${MY_LIBS} ${Boost_LIBRARIES})
