@@ -101,22 +101,22 @@ void OSNSender::silent_ot_recv(osuCrypto::BitVector& choices,
 	vector<BitVector> tmpChoices(num_threads);
 	auto routine = [&](size_t tid)
 	{
-	  size_t start_idx = total_len * tid / num_threads;
-	  size_t end_idx = total_len * (tid + 1) / num_threads;
-	  end_idx = ((end_idx <= total_len) ? end_idx : total_len);
-	  size_t size = end_idx - start_idx;
+		size_t start_idx = total_len * tid / num_threads;
+		size_t end_idx = total_len * (tid + 1) / num_threads;
+		end_idx = ((end_idx <= total_len) ? end_idx : total_len);
+		size_t size = end_idx - start_idx;
 
-	  osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	  osuCrypto::u64 numOTs = size;
+		osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+		osuCrypto::u64 numOTs = size;
 
-	  osuCrypto::SilentOtExtReceiver recv;
-	  recv.configure(numOTs);
+		osuCrypto::SilentOtExtReceiver recv;
+		recv.configure(numOTs);
 
-	  tmpChoices[tid].copy(choices, start_idx, size);
-	  std::vector<oc::block> tmpMsg(size);
-	  recv.silentReceive(tmpChoices[tid], tmpMsg, prng0, chls[tid]);
+		tmpChoices[tid].copy(choices, start_idx, size);
+		std::vector<oc::block> tmpMsg(size);
+		recv.silentReceive(tmpChoices[tid], tmpMsg, prng0, chls[tid]);
 
-	  std::copy_n(tmpMsg.begin(), size, recvMsg.begin() + start_idx);
+		std::copy_n(tmpMsg.begin(), size, recvMsg.begin() + start_idx);
 	};
 	vector<thread> thrds(num_threads);
 	for (size_t t = 0; t < num_threads; t++)
@@ -145,34 +145,34 @@ void OSNSender::rand_ot_recv(osuCrypto::BitVector& choices,
 	size_t num_threads = chls.size();
 	size_t total_len = choices.size();
 	vector<BitVector> tmpChoices(num_threads);
-	
+
 	auto routine = [&](size_t tid)
 	{
 
-	  size_t start_idx = total_len * tid / num_threads;
-	  size_t end_idx = total_len * (tid + 1) / num_threads;
-	  end_idx = ((end_idx <= total_len) ? end_idx : total_len);
-	  size_t size = end_idx - start_idx;
+		size_t start_idx = total_len * tid / num_threads;
+		size_t end_idx = total_len * (tid + 1) / num_threads;
+		end_idx = ((end_idx <= total_len) ? end_idx : total_len);
+		size_t size = end_idx - start_idx;
 
-	  osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
-	  osuCrypto::u64 numOTs = size; // input.length();
-	  std::vector<osuCrypto::block> baseRecv(128);
-	  std::vector<std::array<osuCrypto::block, 2>> baseSend(128);
-	  osuCrypto::BitVector baseChoice(128);
+		osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
+		osuCrypto::u64 numOTs = size; // input.length();
+		std::vector<osuCrypto::block> baseRecv(128);
+		std::vector<std::array<osuCrypto::block, 2>> baseSend(128);
+		osuCrypto::BitVector baseChoice(128);
 
-	  prng0.get((osuCrypto::u8*)baseSend.data()->data(), sizeof(osuCrypto::block) * 2 * baseSend.size());
+		prng0.get((osuCrypto::u8*)baseSend.data()->data(), sizeof(osuCrypto::block) * 2 * baseSend.size());
 
-	  osuCrypto::DefaultBaseOT baseOTs;
-	  baseOTs.send(baseSend, prng0, chls[tid], 1);
+		osuCrypto::DefaultBaseOT baseOTs;
+		baseOTs.send(baseSend, prng0, chls[tid], 1);
 
-	  osuCrypto::IknpOtExtReceiver recv;
-	  recv.setBaseOts(baseSend);
+		osuCrypto::IknpOtExtReceiver recv;
+		recv.setBaseOts(baseSend);
 
-	  tmpChoices[tid].copy(choices, start_idx, size);
-	  std::vector<oc::block> tmpMsg(size);
+		tmpChoices[tid].copy(choices, start_idx, size);
+		std::vector<oc::block> tmpMsg(size);
 
-	  recv.receive(tmpChoices[tid], tmpMsg, prng0, chls[tid]);
-	  std::copy_n(tmpMsg.begin(), size, recvMsg.begin() + start_idx);
+		recv.receive(tmpChoices[tid], tmpMsg, prng0, chls[tid]);
+		std::copy_n(tmpMsg.begin(), size, recvMsg.begin() + start_idx);
 	};
 	vector<thread> thrds(num_threads);
 	for (size_t t = 0; t < num_threads; t++)
@@ -182,7 +182,7 @@ void OSNSender::rand_ot_recv(osuCrypto::BitVector& choices,
 	choices.resize(0);
 	for (size_t t = 0; t < num_threads; t++)
 		choices.append(tmpChoices[t]);
-		
+
 	/*osuCrypto::PRNG prng0(_mm_set_epi32(4253465, 3434565, 234435, 23987045));
 	osuCrypto::u64 numOTs = choices.size(); // input.length();
 	std::vector<osuCrypto::block> baseRecv(128);

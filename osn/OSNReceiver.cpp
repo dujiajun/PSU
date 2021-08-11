@@ -5,6 +5,7 @@
 #include <libOTe/TwoChooseOne/SilentOtExtSender.h>
 #include <libOTe/TwoChooseOne/IknpOtExtSender.h>
 #include <iterator>
+#include <iostream>
 using namespace std;
 using namespace oc;
 void OSNReceiver::rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sendMsg, std::vector<oc::Channel>& chls)
@@ -15,31 +16,31 @@ void OSNReceiver::rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sen
 	size_t total_len = sendMsg.size();
 	auto routine = [&](size_t tid)
 	{
-	  size_t start_idx = total_len * tid / num_threads;
-	  size_t end_idx = total_len * (tid + 1) / num_threads;
-	  end_idx = ((end_idx <= total_len) ? end_idx : total_len);
-	  size_t size = end_idx - start_idx;
+		size_t start_idx = total_len * tid / num_threads;
+		size_t end_idx = total_len * (tid + 1) / num_threads;
+		end_idx = ((end_idx <= total_len) ? end_idx : total_len);
+		size_t size = end_idx - start_idx;
 
-	  osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
+		osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
 
-	  std::vector<osuCrypto::block> baseRecv(128);
-	  osuCrypto::DefaultBaseOT baseOTs;
-	  osuCrypto::BitVector baseChoice(128);
-	  baseChoice.randomize(prng1);
-	  osuCrypto::IknpOtExtSender sender;
-	  baseOTs.receive(baseChoice, baseRecv, prng1, chls[tid], 1);
-	  sender.setBaseOts(baseRecv, baseChoice);
+		std::vector<osuCrypto::block> baseRecv(128);
+		osuCrypto::DefaultBaseOT baseOTs;
+		osuCrypto::BitVector baseChoice(128);
+		baseChoice.randomize(prng1);
+		osuCrypto::IknpOtExtSender sender;
+		baseOTs.receive(baseChoice, baseRecv, prng1, chls[tid], 1);
+		sender.setBaseOts(baseRecv, baseChoice);
 
-	  std::vector<std::array<osuCrypto::block, 2>> tmpMsg(size);
-	  sender.send(tmpMsg, prng1, chls[tid]);
-	  std::copy_n(tmpMsg.begin(), size, sendMsg.begin() + start_idx);
+		std::vector<std::array<osuCrypto::block, 2>> tmpMsg(size);
+		sender.send(tmpMsg, prng1, chls[tid]);
+		std::copy_n(tmpMsg.begin(), size, sendMsg.begin() + start_idx);
 	};
 	vector<thread> thrds(num_threads);
 	for (size_t t = 0; t < num_threads; t++)
 		thrds[t] = std::thread(routine, t);
 	for (size_t t = 0; t < num_threads; t++)
 		thrds[t].join();
-	
+
 	/*osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
 
 	std::vector<osuCrypto::block> baseRecv(128);
@@ -60,19 +61,19 @@ void OSNReceiver::silent_ot_send(std::vector<std::array<osuCrypto::block, 2>>& s
 	size_t total_len = sendMsg.size();
 	auto routine = [&](size_t tid)
 	{
-	  size_t start_idx = total_len * tid / num_threads;
-	  size_t end_idx = total_len * (tid + 1) / num_threads;
-	  end_idx = ((end_idx <= total_len) ? end_idx : total_len);
-	  size_t size = end_idx - start_idx;
+		size_t start_idx = total_len * tid / num_threads;
+		size_t end_idx = total_len * (tid + 1) / num_threads;
+		end_idx = ((end_idx <= total_len) ? end_idx : total_len);
+		size_t size = end_idx - start_idx;
 
-	  osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
-	  osuCrypto::u64 numOTs = size;
+		osuCrypto::PRNG prng1(_mm_set_epi32(4253233465, 334565, 0, 235));
+		osuCrypto::u64 numOTs = size;
 
-	  osuCrypto::SilentOtExtSender sender;
-	  sender.configure(numOTs);
-	  std::vector<std::array<osuCrypto::block, 2>> tmpMsg(size);
-	  sender.silentSend(tmpMsg, prng1, chls[tid]);
-	  std::copy_n(tmpMsg.begin(), size, sendMsg.begin() + start_idx);
+		osuCrypto::SilentOtExtSender sender;
+		sender.configure(numOTs);
+		std::vector<std::array<osuCrypto::block, 2>> tmpMsg(size);
+		sender.silentSend(tmpMsg, prng1, chls[tid]);
+		std::copy_n(tmpMsg.begin(), size, sendMsg.begin() + start_idx);
 	};
 
 	vector<thread> thrds(num_threads);
@@ -201,11 +202,11 @@ void OSNReceiver::prepare_correction(int n, int Val, int lvl_p, int perm_idx, st
 	// ot message M0 = m0 ^ w0 || m1 ^ w1
 	//  for each switch: top wire m0 w0 - bottom wires m1, w1
 	//  M1 = m0 ^ w1 || m1 ^ w0
-	int levels, i, j, x, s;
+	int levels = 2 * n - 1, base_idx;
+	int values = src.size();
 	std::vector<block> bottom1;
 	std::vector<block> top1;
-	int values = src.size();
-	block temp;
+
 
 	block m0, m1, w0, w1, M0[2], M1[2], corr_mesg[2];
 	std::array<oc::block, 2> corr_block, temp_block;
@@ -214,124 +215,124 @@ void OSNReceiver::prepare_correction(int n, int Val, int lvl_p, int perm_idx, st
 	{
 		if (n == 1)
 		{
+			base_idx = lvl_p * (Val / 2) + perm_idx;
 			m0 = src[0];
 			m1 = src[1];
-			temp_block = ot_output[lvl_p * (Val / 2) + perm_idx][0];
+			temp_block = ot_output[base_idx][0];
 			memcpy(M0, temp_block.data(), sizeof(M0));
 			w0 = M0[0] ^ m0;
 			w1 = M0[1] ^ m1;
-			temp_block = ot_output[lvl_p * (Val / 2) + perm_idx][1];
+			temp_block = ot_output[base_idx][1];
 			memcpy(M1, temp_block.data(), sizeof(M1));
 			corr_mesg[0] = M1[0] ^ m0 ^ w1;
 			corr_mesg[1] = M1[1] ^ m1 ^ w0;
-			correction_blocks[lvl_p * (Val / 2) + perm_idx] = { corr_mesg[0], corr_mesg[1] };
+			correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 			M1[0] = m0 ^ w1;
 			M1[1] = m1 ^ w0;
-			ot_output[lvl_p * (Val / 2) + perm_idx][1] = { M1[0], M1[1] };
+			ot_output[base_idx][1] = { M1[0], M1[1] };
 			src[0] = w0;
 			src[1] = w1;
-			// std::cout<<" base index: "<<(lvl_p)*(Val/2)+perm_idx
-			//  <<" m0 = "<<m0<<" "<<" m1 = "<<m1<<" w0 = "<<w0<<" "<<" w1 = "<<w1<<std::endl;
 		}
 		else
 		{
+			base_idx = (lvl_p + 1) * (Val / 2) + perm_idx;
 			m0 = src[0];
 			m1 = src[1];
-			temp_block = ot_output[(lvl_p + 1) * (Val / 2) + perm_idx][0];
+			temp_block = ot_output[base_idx][0];
 			memcpy(M0, temp_block.data(), sizeof(M0));
 			w0 = M0[0] ^ m0;
 			w1 = M0[1] ^ m1;
-			temp_block = ot_output[(lvl_p + 1) * (Val / 2) + perm_idx][1];
+			temp_block = ot_output[base_idx][1];
 			memcpy(M1, temp_block.data(), sizeof(M1));
 			corr_mesg[0] = M1[0] ^ m0 ^ w1;
 			corr_mesg[1] = M1[1] ^ m1 ^ w0;
-			correction_blocks[(lvl_p + 1) * (Val / 2) + perm_idx] = { corr_mesg[0], corr_mesg[1] };
+			correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 			M1[0] = m0 ^ w1;
 			M1[1] = m1 ^ w0;
-			ot_output[(lvl_p + 1) * (Val / 2) + perm_idx][1] = { M1[0], M1[1] };
+			ot_output[base_idx][1] = { M1[0], M1[1] };
 			src[0] = w0;
 			src[1] = w1;
-			// std::cout<<" base index: "<<(lvl_p + 1)*(Val/2)+perm_idx
-			//  <<" m0 = "<<m0<<" "<<" m1 = "<<m1<<" w0 = "<<w0<<" "<<" w1 = "<<w1<<std::endl;
 		}
 		return;
 	}
 
 	if (values == 3)
 	{
+		base_idx = lvl_p * (Val / 2) + perm_idx;
 		m0 = src[0];
 		m1 = src[1];
-		temp_block = ot_output[lvl_p * (Val / 2) + perm_idx][0];
+		temp_block = ot_output[base_idx][0];
 		memcpy(M0, temp_block.data(), sizeof(M0));
 		w0 = M0[0] ^ m0;
 		w1 = M0[1] ^ m1;
-		temp_block = ot_output[lvl_p * (Val / 2) + perm_idx][1];
+		temp_block = ot_output[base_idx][1];
 		memcpy(M1, temp_block.data(), sizeof(M1));
 		corr_mesg[0] = M1[0] ^ m0 ^ w1;
 		corr_mesg[1] = M1[1] ^ m1 ^ w0;
-		correction_blocks[lvl_p * (Val / 2) + perm_idx] = { corr_mesg[0], corr_mesg[1] };
+		correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 		M1[0] = m0 ^ w1;
 		M1[1] = m1 ^ w0;
-		ot_output[lvl_p * (Val / 2) + perm_idx][1] = { M1[0], M1[1] };
+		ot_output[base_idx][1] = { M1[0], M1[1] };
 		src[0] = w0;
 		src[1] = w1;
 
+		base_idx = (lvl_p + 1) * (Val / 2) + perm_idx;
 		m0 = src[1];
 		m1 = src[2];
-		temp_block = ot_output[(lvl_p + 1) * (Val / 2) + perm_idx][0];
+		temp_block = ot_output[base_idx][0];
 		memcpy(M0, temp_block.data(), sizeof(M0));
 		w0 = M0[0] ^ m0;
 		w1 = M0[1] ^ m1;
-		temp_block = ot_output[(lvl_p + 1) * (Val / 2) + perm_idx][1];
+		temp_block = ot_output[base_idx][1];
 		memcpy(M1, temp_block.data(), sizeof(M1));
 		corr_mesg[0] = M1[0] ^ m0 ^ w1;
 		corr_mesg[1] = M1[1] ^ m1 ^ w0;
-		correction_blocks[(lvl_p + 1) * (Val / 2) + perm_idx] = { corr_mesg[0], corr_mesg[1] };
+		correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 		M1[0] = m0 ^ w1;
 		M1[1] = m1 ^ w0;
-		ot_output[(lvl_p + 1) * (Val / 2) + perm_idx][1] = { M1[0], M1[1] };
+		ot_output[base_idx][1] = { M1[0], M1[1] };
 		src[1] = w0;
 		src[2] = w1;
 
+		base_idx = (lvl_p + 2) * (Val / 2) + perm_idx;
 		m0 = src[0];
 		m1 = src[1];
-		temp_block = ot_output[(lvl_p + 2) * (Val / 2) + perm_idx][0];
+		temp_block = ot_output[base_idx][0];
 		memcpy(M0, temp_block.data(), sizeof(M0));
 		w0 = M0[0] ^ m0;
 		w1 = M0[1] ^ m1;
-		temp_block = ot_output[(lvl_p + 2) * (Val / 2) + perm_idx][1];
+		temp_block = ot_output[base_idx][1];
 		memcpy(M1, temp_block.data(), sizeof(M1));
 		corr_mesg[0] = M1[0] ^ m0 ^ w1;
 		corr_mesg[1] = M1[1] ^ m1 ^ w0;
-		correction_blocks[(lvl_p + 2) * (Val / 2) + perm_idx] = { corr_mesg[0], corr_mesg[1] };
+		correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 		M1[0] = m0 ^ w1;
 		M1[1] = m1 ^ w0;
-		ot_output[(lvl_p + 2) * (Val / 2) + perm_idx][1] = { M1[0], M1[1] };
+		ot_output[base_idx][1] = { M1[0], M1[1] };
 		src[0] = w0;
 		src[1] = w1;
 
 		return;
 	}
 
-	levels = 2 * n - 1;
-
 	// partea superioara
-	for (i = 0; i < values - 1; i += 2)
+	for (int i = 0; i < values - 1; i += 2)
 	{
+		base_idx = (lvl_p) * (Val / 2) + perm_idx + i / 2;
 		m0 = src[i];
 		m1 = src[i ^ 1];
-		temp_block = ot_output[(lvl_p) * (Val / 2) + perm_idx + i / 2][0];
+		temp_block = ot_output[base_idx][0];
 		memcpy(M0, temp_block.data(), sizeof(M0));
 		w0 = M0[0] ^ m0;
 		w1 = M0[1] ^ m1;
-		temp_block = ot_output[(lvl_p) * (Val / 2) + perm_idx + i / 2][1];
+		temp_block = ot_output[base_idx][1];
 		memcpy(M1, temp_block.data(), sizeof(M1));
 		corr_mesg[0] = M1[0] ^ m0 ^ w1;
 		corr_mesg[1] = M1[1] ^ m1 ^ w0;
-		correction_blocks[(lvl_p) * (Val / 2) + perm_idx + i / 2] = { corr_mesg[0], corr_mesg[1] };
+		correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 		M1[0] = m0 ^ w1;
 		M1[1] = m1 ^ w0;
-		ot_output[(lvl_p) * (Val / 2) + perm_idx + i / 2][1] = { M1[0], M1[1] };
+		ot_output[base_idx][1] = { M1[0], M1[1] };
 		src[i] = w0;
 		src[i ^ 1] = w1;
 
@@ -345,26 +346,26 @@ void OSNReceiver::prepare_correction(int n, int Val, int lvl_p, int perm_idx, st
 	}
 
 	prepare_correction(n - 1, Val, lvl_p + 1, perm_idx, bottom1, ot_output, correction_blocks);
-	prepare_correction(n - 1, Val, lvl_p + 1, perm_idx + values / 4, top1, ot_output,
-		correction_blocks);
+	prepare_correction(n - 1, Val, lvl_p + 1, perm_idx + values / 4, top1, ot_output, correction_blocks);
 
 	// partea inferioara
-	for (i = 0; i < values - 1; i += 2)
+	for (int i = 0; i < values - 1; i += 2)
 	{
+		base_idx = (lvl_p + levels - 1) * (Val / 2) + perm_idx + i / 2;
 		m1 = top1[i / 2];
 		m0 = bottom1[i / 2];
-		temp_block = ot_output[(lvl_p + levels - 1) * (Val / 2) + perm_idx + i / 2][0];
+		temp_block = ot_output[base_idx][0];
 		memcpy(M0, temp_block.data(), sizeof(M0));
 		w0 = M0[0] ^ m0;
 		w1 = M0[1] ^ m1;
-		temp_block = ot_output[(lvl_p + levels - 1) * (Val / 2) + perm_idx + i / 2][1];
+		temp_block = ot_output[base_idx][1];
 		memcpy(M1, temp_block.data(), sizeof(M1));
 		corr_mesg[0] = M1[0] ^ m0 ^ w1;
 		corr_mesg[1] = M1[1] ^ m1 ^ w0;
-		correction_blocks[(lvl_p + levels - 1) * (Val / 2) + perm_idx + i / 2] = { corr_mesg[0], corr_mesg[1] };
+		correction_blocks[base_idx] = { corr_mesg[0], corr_mesg[1] };
 		M1[0] = m0 ^ w1;
 		M1[1] = m1 ^ w0;
-		ot_output[(lvl_p + levels - 1) * (Val / 2) + perm_idx + i / 2][1] = { M1[0], M1[1] };
+		ot_output[base_idx][1] = { M1[0], M1[1] };
 		src[i] = w0;
 		src[i ^ 1] = w1;
 	}
