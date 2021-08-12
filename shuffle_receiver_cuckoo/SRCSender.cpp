@@ -8,8 +8,8 @@ void SRCSender::setSenderSet(const std::vector<block>& sender_set, size_t receiv
 	this->sender_set_size = sender_set.size();
 	this->sender_set = sender_set;
 	receiver_set_size = receiver_size;
-	cuckoo_hash_num = 3;
-	CuckooParam cuckoo_param = { 0, 1.27, cuckoo_hash_num, receiver_set_size };
+	cuckoo_hash_num = 4;
+	CuckooParam cuckoo_param = { 0, 1.09, cuckoo_hash_num, receiver_set_size };
 	cuckoo.init(cuckoo_param);
 	shuffle_size = cuckoo.mBins.size();
 	osn_sender.init(shuffle_size, 1);

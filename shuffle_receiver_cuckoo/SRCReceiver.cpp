@@ -12,8 +12,8 @@ void SRCReceiver::setReceiverSet(const std::vector<block>& receiver_set, size_t 
 	this->receiver_set_size = receiver_set.size();
 	this->sender_set_size = sender_size;
 
-	cuckoo_hash_num = 3;
-	CuckooParam cuckoo_param = { 0, 1.27, cuckoo_hash_num, receiver_set_size };
+	cuckoo_hash_num = 4;
+	CuckooParam cuckoo_param = { 0, 1.09, cuckoo_hash_num, receiver_set_size };
 	cuckoo.init(cuckoo_param);
 	vector<size_t> indexes(receiver_set_size);
 	for (size_t i = 0; i < receiver_set_size; i++)indexes[i] = i;

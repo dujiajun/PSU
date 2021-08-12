@@ -62,12 +62,12 @@ add_executable(ShuffleReceiver_Cuckoo
         shuffle_receiver_cuckoo/SRCSender.h
         shuffle_receiver_cuckoo/ShuffleReceiver_Cuckoo.cpp)
 
-add_executable(ShuffleReceiver_Simple
-        shuffle_receiver_simple/SRSReceiver.cpp
-        shuffle_receiver_simple/SRSReceiver.h
-        shuffle_receiver_simple/SRSSender.cpp
-        shuffle_receiver_simple/SRSSender.h
-        shuffle_receiver_simple/ShuffleReceiver_Simple.cpp)
+# add_executable(ShuffleReceiver_Simple
+#         shuffle_receiver_simple/SRSReceiver.cpp
+#         shuffle_receiver_simple/SRSReceiver.h
+#         shuffle_receiver_simple/SRSSender.cpp
+#         shuffle_receiver_simple/SRSSender.h
+#         shuffle_receiver_simple/ShuffleReceiver_Simple.cpp)
 
 add_executable(ShuffleReceiver
         "shuffle_receiver/SRReceiver.cpp"
@@ -95,7 +95,7 @@ add_executable(test_osn
 
 target_link_libraries(ShuffleReceiver common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
 target_link_libraries(ShuffleReceiver_Cuckoo common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
-target_link_libraries(ShuffleReceiver_Simple common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
+# target_link_libraries(ShuffleReceiver_Simple common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
 target_link_libraries(ShuffleSender common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
 target_link_libraries(ShuffleSender_Cuckoo common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
 target_link_libraries(test_osn osn ${MY_LIBS} ${Boost_LIBRARIES})
