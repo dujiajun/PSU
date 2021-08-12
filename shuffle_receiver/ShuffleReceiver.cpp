@@ -117,7 +117,7 @@ int main(int argc, char** argv)
 	sender_size = 1ull << atoi(argv[1]);
 	receiver_size = 1ull << atoi(argv[2]);
 	num_threads = atoi(argv[3]);
-
+	cout << "sender_size:" << sender_size << " vs receiver_size:" << receiver_size << ", num_threads:" << num_threads << endl;
 	auto recver_thrd = std::thread(receiver);
 	auto sender_thrd = std::thread(sender);
 	recver_thrd.join();

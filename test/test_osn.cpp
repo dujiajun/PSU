@@ -53,8 +53,8 @@ void sender(size_t size)
 		sent += chl.getTotalDataSent();
 		recv += chl.getTotalDataRecv();
 	}
-	cout << sent / 1024.0 / 1024.0 << "MB sent and " << recv / 1024.0 / 1024.0
-		<< "MB recv" << endl;
+	cout << "recv: " << recv / 1024.0 / 1024.0 << "MB sent:" << sent / 1024.0 / 1024.0 << "MB "
+		<< "total: " << (recv + sent) / 1024.0 / 1024.0 << "MB" << endl;
 	cout << IoStream::unlock;
 }
 
@@ -94,8 +94,8 @@ void receiver(size_t size)
 		sent += chl.getTotalDataSent();
 		recv += chl.getTotalDataRecv();
 	}
-	cout << sent / 1024.0 / 1024.0 << "MB sent and " << recv / 1024.0 / 1024.0
-		<< "MB recv" << endl;
+	cout << "recv: " << recv / 1024.0 / 1024.0 << "MB sent:" << sent / 1024.0 / 1024.0 << "MB "
+		<< "total: " << (recv + sent) / 1024.0 / 1024.0 << "MB" << endl;
 	cout << IoStream::unlock;
 }
 
@@ -116,6 +116,8 @@ int main(int argc, char** argv)
 {
 	size_t size = 1 << atoi(argv[1]);
 	num_threads = atoi(argv[2]);
+	cout << "size:" << size << " num_threads:" << num_threads << endl;
+
 	auto sender_thrd = thread(sender, size);
 	auto receiver_thrd = thread(receiver, size);
 	sender_thrd.join();
