@@ -6,7 +6,7 @@ using namespace oc;
 
 std::vector<oc::block> SRSReceiver::runPermuteShare(size_t tid, const std::vector<oc::block>& x_set, std::vector<oc::Channel>& chls)
 {
-	osn_receivers[tid].init(x_set.size(), 1);
+	osn_receivers[tid].init(x_set.size(), context.osn_ot_type);
 	vector<Channel> tmpchls(chls.begin() + tid, chls.begin() + tid + 1);
 	return osn_receivers[tid].run_osn(x_set, tmpchls);
 }
@@ -18,24 +18,17 @@ oc::u8* SRSReceiver::runMpOprf(std::vector<oc::Channel>& chls, const std::vector
 	return mp_oprf_receiver.run(prng, chls, recv_set);
 }
 
-void SRSReceiver::setThreads(size_t num_threads)
-{
-	osn_receivers.resize(num_threads);
-}
-
 void SRSReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, size_t sender_size)
 {
-	this->receiver_set_size = receiver_set.size();
 	this->receiver_set = receiver_set;
-	sender_set_size = sender_size;
-
-	simple.init(receiver_set_size);
-	simple.insertItems(receiver_set, 1);
+	simple.init(context.receiver_size);
+	simple.insertItems(receiver_set, context.num_threads);
 	for (auto& bin : simple.mBins)
 	{
 		for (size_t j = bin.mBinRealSizes; j < simple.mMaxBinSize; j++)
 			bin.items.push_back(AllOneBlock);
 	}
+	osn_receivers.resize(context.num_threads);
 }
 
 std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
@@ -44,7 +37,7 @@ std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
 	vector<block> union_result;
 	vector<vector<block>> shares(simple.mBins.size());
 
-	auto num_threads = chls.size();
+	size_t& num_threads = context.num_threads;
 	std::vector<std::thread> thrds(num_threads);
 
 	auto ps_thread = [&](size_t tid)

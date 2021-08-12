@@ -9,13 +9,6 @@
 
 class SRReceiver : public PSUReceiver
 {
-	oc::Timer* timer;
-	size_t sender_set_size;
-	size_t receiver_set_size;
-	size_t shuffle_size;
-
-	std::vector<oc::block> receiver_set;
-
 	OSNReceiver osn_receiver;
 	oc::MPOPRFReceiver mp_oprf_receiver;
 	oc::IknpOtExtReceiver ot_receiver;

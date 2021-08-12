@@ -8,13 +8,6 @@
 
 class SRSender : public PSUSender
 {
-	oc::Timer* timer;
-	size_t sender_set_size;
-	size_t receiver_set_size;
-	size_t shuffle_size;
-
-	std::vector<oc::block> sender_set;
-
 	OSNSender osn_sender;
 	oc::MPOPRFSender mp_oprf_sender;
 	oc::IknpOtExtSender ot_sender;

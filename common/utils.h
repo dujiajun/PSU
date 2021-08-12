@@ -2,6 +2,7 @@
 
 #include "cryptoTools/Common/Defines.h"
 #include <cstring>
+#include <string>
 
 struct PRF
 	{
@@ -53,7 +54,21 @@ struct PRF
 		}
 	};
 
-//inline bool operator<(__m128i a, __m128i b);
-
 void PrintBuffer(void* pBuff, unsigned int nLen);
 
+struct Context 
+{
+	size_t role;
+	size_t psu_type;
+
+	std::string host;
+	size_t port;
+
+	size_t sender_size;
+	size_t receiver_size;
+	size_t num_threads;
+	size_t osn_ot_type;
+
+	size_t cuckoo_hash_num;
+	double cuckoo_scaler;
+};

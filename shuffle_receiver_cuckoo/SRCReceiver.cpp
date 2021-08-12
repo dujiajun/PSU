@@ -9,14 +9,11 @@ using namespace std;
 void SRCReceiver::setReceiverSet(const std::vector<block>& receiver_set, size_t sender_size)
 {
 	this->receiver_set = receiver_set;
-	this->receiver_set_size = receiver_set.size();
-	this->sender_set_size = sender_size;
 
-	cuckoo_hash_num = 4;
-	CuckooParam cuckoo_param = { 0, 1.09, cuckoo_hash_num, receiver_set_size };
+	CuckooParam cuckoo_param = { 0, context.cuckoo_scaler, context.cuckoo_hash_num, context.receiver_size };
 	cuckoo.init(cuckoo_param);
-	vector<size_t> indexes(receiver_set_size);
-	for (size_t i = 0; i < receiver_set_size; i++)indexes[i] = i;
+	vector<size_t> indexes(context.receiver_size);
+	for (size_t i = 0; i < context.receiver_size; i++)indexes[i] = i;
 	//cuckoo.insert(receiver_set);
 	cuckoo.insert(indexes, this->receiver_set);
 	after_cuckoo_set.resize(cuckoo.mBins.size());
@@ -29,7 +26,7 @@ void SRCReceiver::setReceiverSet(const std::vector<block>& receiver_set, size_t 
 			after_cuckoo_set[i] = receiver_set[bin.idx()];
 	}
 	shuffle_size = after_cuckoo_set.size();
-	osn_receiver.init(shuffle_size, 1);
+	osn_receiver.init(shuffle_size, context.osn_ot_type);
 }
 
 std::vector<block> SRCReceiver::runPermuteShare(const vector<block>& x_set, std::vector<Channel>& chls)
@@ -63,14 +60,14 @@ std::vector<block> SRCReceiver::output(vector<Channel>& chls)
 
 	timer->setTimePoint("after runPermuteShare");
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(receiver_set_size, sender_set_size);
+	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(context.receiver_size, context.sender_size);
 
 	u8* oprfs = runMpOprf(chls,
 		shares,
 		toBlock(123456),
 		shuffle_size,
 		log2ceil(shuffle_size),
-		get_mp_oprf_width(receiver_set_size, sender_set_size),
+		get_mp_oprf_width(context.receiver_size, context.sender_size),
 		hashLengthInBytes,
 		32,
 		1 << 8,
@@ -84,19 +81,19 @@ std::vector<block> SRCReceiver::output(vector<Channel>& chls)
 		oprfs_set.insert(oprf);
 	}
 
-	BitVector choices(sender_set_size);
+	BitVector choices(context.sender_size);
 
-	vector<u8> recv_oprfs(cuckoo_hash_num * sender_set_size * hashLengthInBytes);
+	vector<u8> recv_oprfs(context.cuckoo_hash_num * context.sender_size * hashLengthInBytes);
 
 	chls[0].recv(recv_oprfs);
 	timer->setTimePoint("after recv oprf");
 
-	for (size_t x = 0; x < sender_set_size; x++)
+	for (size_t x = 0; x < context.sender_size; x++)
 	{
 		bool flag = false;
-		for (size_t j = 0; j < cuckoo_hash_num; j++)
+		for (size_t j = 0; j < context.cuckoo_hash_num; j++)
 		{
-			auto oprf = PRF(hashLengthInBytes, recv_oprfs.data() + (x * cuckoo_hash_num + j) * hashLengthInBytes);//
+			auto oprf = PRF(hashLengthInBytes, recv_oprfs.data() + (x * context.cuckoo_hash_num + j) * hashLengthInBytes);//
 			if (oprfs_set.find(oprf) != oprfs_set.end())
 			{
 				choices[x] = 1;
@@ -112,7 +109,7 @@ std::vector<block> SRCReceiver::output(vector<Channel>& chls)
 	timer->setTimePoint("after compare oprf");
 
 	delete[]oprfs;
-	vector<block> msgs(sender_set_size);
+	vector<block> msgs(context.sender_size);
 	ot_receiver.receiveChosen(choices, msgs, prng, chls[0]);
 
 	for (auto& msg : msgs)

@@ -8,13 +8,7 @@
 // Shuffle-Receiver Receiver with Simple Index
 class SRSReceiver : public PSUReceiver
 {
-	oc::Timer* timer;
-	size_t sender_set_size;
-	size_t receiver_set_size;
-
 	oc::SimpleIndex simple;
-
-	std::vector<oc::block> receiver_set;
 
 	std::vector<OSNReceiver> osn_receivers;
 	oc::MPOPRFReceiver mp_oprf_receiver;
@@ -32,7 +26,6 @@ class SRSReceiver : public PSUReceiver
 		const oc::u64& bucket1,
 		const oc::u64& bucket2);
 public:
-	void setThreads(size_t num_threads);
 	void setReceiverSet(const std::vector<oc::block>& receiver_set, size_t sender_size);
 	std::vector<oc::block> output(std::vector<oc::Channel>& chls);
 	void setTimer(oc::Timer& timer);

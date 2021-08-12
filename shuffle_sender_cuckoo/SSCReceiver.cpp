@@ -27,35 +27,25 @@ std::vector<oc::block> SSCReceiver::runPermuteShareReceiver(const std::vector<oc
 }
 void SSCReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, size_t sender_size)
 {
-	this->receiver_set_size = receiver_set.size();
 	this->receiver_set = receiver_set;
-	sender_set_size = sender_size;
-
-	size_t cuckoo_hash_num = 4;
-	size_t cuckoo_bin_num = ceil(1.09 * sender_size);
-	
+	size_t cuckoo_bin_num = ceil(context.cuckoo_scaler * sender_size);
 	simple.resize(cuckoo_bin_num);
-	vector<block> tmp(receiver_set_size);
+
 	for (auto& y : receiver_set)
 	{
-		for (size_t i = 0; i < cuckoo_hash_num; i++)
+		for (size_t i = 0; i < context.cuckoo_hash_num; i++)
 		{
 			size_t idx = CuckooIndex<ThreadSafe>::getHash(y, i, cuckoo_bin_num);
 			simple[idx].emplace_back(y);
 		}
 	}
 	
-	cuckoo_max_bin_size = 0;// getSimpleBinSize(sender_set_size, receiver_set_size);
-	for (auto& bin : simple)
-	{
-		if (bin.size() > cuckoo_max_bin_size)
-			cuckoo_max_bin_size = bin.size();
-	}
+	cuckoo_max_bin_size = getSimpleBinSize(context.sender_size, context.receiver_size);
 
 	shuffle_size = cuckoo_bin_num;
 	
-	osn_sender.init(shuffle_size, 1);
-	osn_receiver.init(shuffle_size, 1);
+	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_receiver.init(shuffle_size, context.osn_ot_type);
 }
 std::vector<oc::block> SSCReceiver::output(std::vector<oc::Channel>& chls)
 {
@@ -63,18 +53,18 @@ std::vector<oc::block> SSCReceiver::output(std::vector<oc::Channel>& chls)
 	timer->setTimePoint("after runPermuteShareSender");
 	vector<int> pi_out = osn_sender.dest;
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(sender_set_size, receiver_set_size);
+	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(context.sender_size, context.receiver_size);
 	runMPOPRF(chls,
 		toBlock(123456),
 		shuffle_size,
 		log2ceil(shuffle_size),
-		get_mp_oprf_width(sender_set_size, receiver_set_size),
+		get_mp_oprf_width(context.sender_size, context.receiver_size),
 		hashLengthInBytes,
 		32,
 		1 << 8,
 		1 << 8);
 	timer->setTimePoint("after runMpOprf");
-	size_t num_threads = chls.size();
+	size_t &num_threads = context.num_threads;
 	auto routine = [&](size_t tid)
 	{
 	  PRNG prng(oc::toBlock(123));

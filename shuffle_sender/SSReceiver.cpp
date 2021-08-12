@@ -28,12 +28,9 @@ void SSReceiver::runMPOPRF(std::vector<oc::Channel>& chls,
 }
 void SSReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, size_t sender_size)
 {
-	this->receiver_set_size = receiver_set.size();
 	this->receiver_set = receiver_set;
-	sender_set_size = sender_size;
 	shuffle_size = sender_size;
-
-	osn_sender.init(shuffle_size, 1);
+	osn_sender.init(shuffle_size, context.osn_ot_type);
 }
 std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 {
@@ -61,16 +58,15 @@ std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 		1 << 8,
 		1 << 8);
 
-	auto sender_size = receiver_set_size;
 	timer->setTimePoint("after runMpOprf");
 	
-	size_t num_threads = chls.size();
+	size_t& num_threads = context.num_threads;
 	auto routine = [&](size_t tid)
 	{
 	  for (size_t i = tid; i < shares.size(); i += num_threads)
 	  {
-		  vector<block> tmp(receiver_set_size);
-		  for (size_t j = 0; j < receiver_set_size; j++)
+		  vector<block> tmp(context.receiver_size);
+		  for (size_t j = 0; j < context.receiver_size; j++)
 			  tmp[j] = _mm_xor_si128(shares[i], receiver_set[j]);
 		  auto oprfs = mp_oprf_sender.get_oprf(tmp);
 		  chls[tid].asyncSend(std::move(oprfs));

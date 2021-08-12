@@ -5,7 +5,7 @@ using namespace oc;
 
 std::vector<oc::block> SRSSender::runPermuteShare(size_t tid, size_t shuffle_size, std::vector<oc::Channel>& chls)
 {
-	osn_senders[tid].init(shuffle_size, 1);
+	osn_senders[tid].init(shuffle_size, context.osn_ot_type);
 	vector<Channel> tmpchls(chls.begin() + tid, chls.begin() + tid + 1);
 	return osn_senders[tid].run_osn(tmpchls);
 }
@@ -17,24 +17,17 @@ void SRSSender::runMPOPRF(std::vector<oc::Channel>& chls, const oc::block& commo
 	mp_oprf_sender.run(prng, chls);
 }
 
-void SRSSender::setThreads(size_t num_threads)
-{
-	osn_senders.resize(num_threads);
-}
-
 void SRSSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t receiver_size)
 {
-	this->sender_set_size = sender_set.size();
 	this->sender_set = sender_set;
-	receiver_set_size = receiver_size;
-
-	simple.init(sender_set.size());
-	simple.insertItems(sender_set, 1);
+	simple.init(context.sender_size);
+	simple.insertItems(sender_set, context.num_threads);
 	for (auto& bin : simple.mBins)
 	{
 		for (size_t j = bin.mBinRealSizes; j < simple.mMaxBinSize; j++)
 			bin.items.push_back(AllOneBlock);
 	}
+	osn_senders.resize(context.num_threads);
 }
 
 void SRSSender::output(std::vector<oc::Channel>& chls)
@@ -42,7 +35,7 @@ void SRSSender::output(std::vector<oc::Channel>& chls)
 	
 	PRNG prng(oc::toBlock(123));
 	vector<vector<block>> shares(simple.mNumBins);
-	auto num_threads = chls.size();
+	size_t& num_threads = context.num_threads;
 	std::vector<std::thread> thrds(num_threads);
 
 	auto ps_thread = [&](size_t tid)

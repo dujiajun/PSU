@@ -33,16 +33,13 @@ std::vector<oc::block> SSCSender::runPermuteShareReceiver(const std::vector<oc::
 }
 void SSCSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t receiver_size)
 {
-	this->sender_set_size = sender_set.size();
 	this->sender_set = sender_set;
-	receiver_set_size = receiver_size;
 
-	size_t cockoo_hash_num = 4;
-	CuckooParam param = { 0, 1.09, cockoo_hash_num, sender_set_size };
+	CuckooParam param = { 0, context.cuckoo_scaler, context.cuckoo_hash_num, context.sender_size };
 	cuckoo.init(param);
 
-	vector<size_t> indexes(sender_set_size);
-	for (size_t i = 0; i < sender_set_size; i++)indexes[i] = i;
+	vector<size_t> indexes(context.sender_size);
+	for (size_t i = 0; i < context.sender_size; i++)indexes[i] = i;
 
 	cuckoo.insert(indexes, this->sender_set);
 	after_cuckoo_set.resize(cuckoo.mBins.size());
@@ -56,8 +53,8 @@ void SSCSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t re
 	}
 	shuffle_size = after_cuckoo_set.size();
 	
-	osn_sender.init(shuffle_size, 1);
-	osn_receiver.init(shuffle_size, 1);
+	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_receiver.init(shuffle_size, context.osn_ot_type);
 }
 void SSCSender::output(std::vector<oc::Channel>& chls)
 {
@@ -67,13 +64,13 @@ void SSCSender::output(std::vector<oc::Channel>& chls)
 
 	timer->setTimePoint("after runPermuteShareReceiver");
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(sender_set_size, receiver_set_size);
+	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(context.sender_size, context.receiver_size);
 	u8* oprfs = runMpOprf(chls,
 		shares,
 		toBlock(123456),
 		shuffle_size,
 		log2ceil(shuffle_size),
-		get_mp_oprf_width(sender_set_size, receiver_set_size),
+		get_mp_oprf_width(context.sender_size, context.receiver_size),
 		hashLengthInBytes,
 		32,
 		1 << 8,
@@ -82,8 +79,8 @@ void SSCSender::output(std::vector<oc::Channel>& chls)
 
 	vector<bool> b(shares.size());
 
-	size_t num_threads = chls.size();
-	size_t max_bin_size = getSimpleBinSize(sender_set_size, receiver_set_size);
+	size_t &num_threads = context.num_threads;
+	size_t max_bin_size = getSimpleBinSize(context.sender_size, context.receiver_size);
 	auto routine = [&](size_t tid)
 	{
 	  size_t start_idx = shares.size() * tid / num_threads;

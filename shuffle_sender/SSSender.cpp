@@ -30,13 +30,9 @@ oc::u8* SSSender::runMpOprf(vector<oc::Channel>& chls,
 }
 void SSSender::setSenderSet(const vector<oc::block>& sender_set, size_t receiver_size)
 {
-	this->sender_set_size = sender_set.size();
 	this->sender_set = sender_set;
-
-	shuffle_size = sender_set_size;
-	receiver_set_size = receiver_size;
-
-	osn_receiver.init(shuffle_size, 1);
+	shuffle_size = context.sender_size;
+	osn_receiver.init(shuffle_size, context.osn_ot_type);
 }
 void SSSender::output(vector<oc::Channel>& chls)
 {
@@ -61,15 +57,15 @@ void SSSender::output(vector<oc::Channel>& chls)
 
 	vector<block> msgs(shares.size());
 
-	size_t num_threads = chls.size();
+	size_t& num_threads = context.num_threads;
 	auto routine = [&](size_t tid)
 	{
 	  for (size_t i = tid; i < shares.size(); i += num_threads)
 	  {
-		  vector<u8> recv_oprfs(receiver_set_size * hashLengthInBytes);
+		  vector<u8> recv_oprfs(context.receiver_size * hashLengthInBytes);
 		  chls[tid].recv(recv_oprfs);
 		  set<PRF> bf;
-		  for (size_t j = 0; j < receiver_set_size; j++)
+		  for (size_t j = 0; j < context.receiver_size; j++)
 		  {
 			  bf.insert(PRF(hashLengthInBytes, recv_oprfs.data() + j * hashLengthInBytes));
 		  }

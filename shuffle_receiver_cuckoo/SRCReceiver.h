@@ -8,15 +8,7 @@
 // Shuffle-Receiver Receiver with Cuckoo Hash
 class SRCReceiver : public PSUReceiver
 {
-	oc::Timer* timer;
-	size_t sender_set_size;
-	size_t receiver_set_size;
-	size_t shuffle_size;
-	size_t cuckoo_hash_num;
-
 	oc::CuckooIndex<oc::ThreadSafe> cuckoo;
-
-	std::vector<oc::block> receiver_set;
 	std::vector<oc::block> after_cuckoo_set;
 
 	OSNReceiver osn_receiver;

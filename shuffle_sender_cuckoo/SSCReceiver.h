@@ -8,13 +8,6 @@
 #include <PSUReceiver.h>
 class SSCReceiver : public PSUReceiver
 {
-	oc::Timer* timer;
-	size_t sender_set_size;
-	size_t receiver_set_size;
-
-	size_t shuffle_size;
-
-	std::vector<oc::block> receiver_set;
 	std::vector<oc::block> after_cuckoo_set;
 
 	size_t cuckoo_max_bin_size;

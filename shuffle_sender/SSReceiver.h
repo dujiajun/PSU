@@ -7,13 +7,6 @@
 // Shuffle-Sender Receiver
 class SSReceiver : public PSUReceiver
 {
-	oc::Timer* timer;
-	size_t sender_set_size;
-	size_t receiver_set_size;
-	size_t shuffle_size;
-
-	std::vector<oc::block> receiver_set;
-
 	OSNSender osn_sender;
 	oc::MPOPRFSender mp_oprf_sender;
 
