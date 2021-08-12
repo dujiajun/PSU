@@ -35,7 +35,7 @@ void run_sender(const Context& context)
 	vector<block> senderSet(context.sender_size);
 	for (auto i = 0; i < context.sender_size; ++i)
 	{
-		senderSet[i] = prng.get<block>();
+		senderSet[i] = toBlock(i + 1);// prng.get<block>();
 	}
 
 	Timer timer;
@@ -98,7 +98,7 @@ void run_receiver(const Context& context)
 
 	for (auto i = 0; i < context.receiver_size; ++i)
 	{
-		receiverSet[i] = prng.get<block>();
+		receiverSet[i] = toBlock(i + 1);// prng.get<block>();
 	}
 
 	PSUReceiver* receiver = nullptr;
@@ -113,10 +113,18 @@ void run_receiver(const Context& context)
 	else if (context.psu_type == 2)
 	{
 		receiver = new SRCReceiver;
+		for (auto i = 0; i < context.receiver_size / 2; ++i) 
+		{
+			receiverSet[i] = toBlock(i + 1 + context.receiver_size);
+		}
 	}
 	else if (context.psu_type == 3)
 	{
 		receiver = new SSCReceiver;
+		for (auto i = 0; i < context.receiver_size; ++i)
+		{
+			receiverSet[i] = prng.get<block>();
+		}
 	}
 	if (receiver == nullptr)
 		return;
