@@ -42,7 +42,7 @@ void SSCReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, siz
 
 	shuffle_size = cuckoo_bin_num;
 
-	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_sender.init(shuffle_size, context.osn_ot_type, context.osn_cache);
 	osn_receiver.init(shuffle_size, context.osn_ot_type);
 }
 std::vector<oc::block> SSCReceiver::output(std::vector<oc::Channel>& chls)

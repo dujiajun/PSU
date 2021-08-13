@@ -205,7 +205,7 @@ OSNSender::OSNSender(size_t size, int ot_type) : size(size), ot_type(ot_type)
 
 }
 
-void OSNSender::init(size_t size, int ot_type)
+void OSNSender::init(size_t size, int ot_type, const string& osn_cache)
 {
 	this->size = size;
 	this->ot_type = ot_type;
@@ -228,6 +228,24 @@ void OSNSender::init(size_t size, int ot_type)
 		int loc = prng.get<uint64_t>() % (i + 1); //  pick random location in the array
 		std::swap(dest[i], dest[loc]);
 	}
-	benes.gen_benes_route(N, 0, 0, src, dest);
+	if (osn_cache != "")
+	{
+		string file = osn_cache + "_" + to_string(size);
+		if (!benes.load(file))
+		{
+			cout << "OSNSender is generating osn cache!" << endl;
+			benes.gen_benes_route(N, 0, 0, src, dest);
+			benes.dump(file);
+		}
+		else 
+		{
+			cout << "OSNSender is using osn cache!" << endl;
+		}
+	}
+	else 
+	{
+		benes.gen_benes_route(N, 0, 0, src, dest);
+	}
+	
 
 }

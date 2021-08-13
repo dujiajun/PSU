@@ -5,7 +5,7 @@ using namespace oc;
 
 std::vector<oc::block> SRSSender::runPermuteShare(size_t tid, size_t shuffle_size, std::vector<oc::Channel>& chls)
 {
-	osn_senders[tid].init(shuffle_size, context.osn_ot_type);
+	osn_senders[tid].init(shuffle_size, context.osn_ot_type, context.osn_cache);
 	vector<Channel> tmpchls(chls.begin() + tid, chls.begin() + tid + 1);
 	return osn_senders[tid].run_osn(tmpchls);
 }

@@ -24,7 +24,7 @@ void SSReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, size
 {
 	this->receiver_set = receiver_set;
 	shuffle_size = sender_size;
-	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_sender.init(shuffle_size, context.osn_ot_type, context.osn_cache);
 }
 std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 {

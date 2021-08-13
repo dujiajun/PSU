@@ -68,6 +68,7 @@ struct Context
 	size_t receiver_size;
 	size_t num_threads;
 	size_t osn_ot_type;
+	std::string osn_cache;
 
 	size_t cuckoo_hash_num;
 	double cuckoo_scaler;

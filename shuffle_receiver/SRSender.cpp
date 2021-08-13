@@ -20,7 +20,7 @@ void SRSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t rec
 {
 	this->sender_set = sender_set;
 	shuffle_size = receiver_size;
-	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_sender.init(shuffle_size, context.osn_ot_type, context.osn_cache);
 }
 
 void SRSender::output(std::vector<oc::Channel>& chls)

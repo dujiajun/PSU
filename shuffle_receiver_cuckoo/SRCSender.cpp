@@ -9,7 +9,7 @@ void SRCSender::setSenderSet(const std::vector<block>& sender_set, size_t receiv
 	CuckooParam cuckoo_param = { 0, context.cuckoo_scaler, context.cuckoo_hash_num, context.receiver_size };
 	cuckoo.init(cuckoo_param);
 	shuffle_size = cuckoo.mBins.size();
-	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_sender.init(shuffle_size, context.osn_ot_type, context.osn_cache);
 }
 
 std::vector<block> SRCSender::runPermuteShare(std::vector<Channel>& chls)

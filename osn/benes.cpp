@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <fstream>
 #include <cryptoTools/Common/Defines.h>
 #include <cryptoTools/Common/BitVector.h>
 #include "benes.h"
@@ -11,6 +12,53 @@
 using namespace std;
 using namespace oc;
 
+bool Benes::dump(const std::string& filename)
+{
+	ofstream out(filename, ios::out | ios::binary);
+	if (!out.is_open())
+		return false;
+	size_t benes_size = path.size();
+	size_t values = perm.size();
+	size_t levels = switched.size();
+	out.write((char*)&benes_size, sizeof(size_t));
+	out.write((char*)&values, sizeof(size_t));
+	out.write((char*)&levels, sizeof(size_t));
+	//out << benes_size << values << levels;
+	out.write(path.data(), benes_size * sizeof(path[0]));
+	out.write((char*)perm.data(), values * sizeof(perm[0]));
+	out.write((char*)inv_perm.data(), values * sizeof(inv_perm[0]));
+	
+	for (size_t i = 0; i < levels; i++)
+	{
+		out.write((char*)switched[i].data(), (values / 2) * sizeof(switched[i][0]));
+	}
+	out.close();
+	return true;
+}
+
+bool Benes::load(const std::string& filename)
+{
+	ifstream in(filename, ios::in | ios::binary);
+	if (!in.is_open())
+		return false;
+	size_t benes_size, values, levels;
+	in.read((char*)&benes_size, sizeof(size_t));
+	in.read((char*)&values, sizeof(size_t));
+	in.read((char*)&levels, sizeof(size_t));
+	path.resize(benes_size);
+	perm.resize(values);
+	inv_perm.resize(values);
+	switched.resize(levels);
+	in.read(path.data(), benes_size * sizeof(path[0]));
+	in.read((char*)perm.data(), values * sizeof(perm[0]));
+	in.read((char*)inv_perm.data(), values * sizeof(inv_perm[0]));
+	for (size_t i = 0; i < levels; i++)
+	{
+		in.read((char*)switched[i].data(), (values / 2) * sizeof(switched[i][0]));
+	}
+	in.close();
+	return true;
+}
 
 void Benes::initialize(int values, int levels)
 {

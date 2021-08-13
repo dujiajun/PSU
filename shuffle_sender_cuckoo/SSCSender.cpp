@@ -50,7 +50,7 @@ void SSCSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t re
 	}
 	shuffle_size = after_cuckoo_set.size();
 
-	osn_sender.init(shuffle_size, context.osn_ot_type);
+	osn_sender.init(shuffle_size, context.osn_ot_type, context.osn_cache);
 	osn_receiver.init(shuffle_size, context.osn_ot_type);
 }
 void SSCSender::output(std::vector<oc::Channel>& chls)

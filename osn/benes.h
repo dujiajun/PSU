@@ -16,6 +16,10 @@ class Benes
 	void gen_benes_eval(int n, int lvl_p, int perm_idx, std::vector<uint64_t>& src);
 public:
 
+	bool dump(const std::string& filename);
+
+	bool load(const std::string& filename);
+
 	void initialize(int values, int levels);
 
 	osuCrypto::BitVector return_switches(int N);

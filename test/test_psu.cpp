@@ -38,7 +38,7 @@ void run_sender(const Context& context)
 		senderSet[i] = toBlock(i + 1);// prng.get<block>();
 	}
 
-	Timer timer;
+	
 	PSUSender* sender = nullptr;
 	if (context.psu_type == 0)
 	{
@@ -60,10 +60,10 @@ void run_sender(const Context& context)
 		return;
 
 	sender->setContext(context);
-	sender->setTimer(timer);
-
+	
 	sender->setSenderSet(senderSet, context.receiver_size);
-
+	Timer timer;
+	sender->setTimer(timer);
 	timer.reset();
 	timer.setTimePoint("before output");
 	sender->output(chls);
@@ -86,7 +86,7 @@ void run_sender(const Context& context)
 
 void run_receiver(const Context& context)
 {
-	Timer timer;
+	
 	IOService ios;
 	Session session(ios, context.host, context.port, EpMode::Client);
 	vector<Channel> chls(context.num_threads);
@@ -130,10 +130,11 @@ void run_receiver(const Context& context)
 		return;
 
 	receiver->setContext(context);
-	receiver->setTimer(timer);
-
+	
 	receiver->setReceiverSet(receiverSet, context.sender_size);
 
+	Timer timer;
+	receiver->setTimer(timer);
 	timer.reset();
 	timer.setTimePoint("before output");
 	auto res = receiver->output(chls);
@@ -166,7 +167,8 @@ Context parse_arguments(int argc, char** argv)
 	parser.add<size_t>("sender", 's', "sender set size (log2)", false, 8);
 	parser.add<size_t>("receiver", 'r', "receiver set size (log2)", false, 8);
 	parser.add<size_t>("threads", 't', "threads", false, 1);
-	parser.add<size_t>("osn_ot", 'o', "osn ot type (IKNP: 1, SILENT: 0)", false, 1);
+	parser.add<size_t>("osn_ot", 'o', "osn ot type (1:IKNP, 0:SILENT)", false, 1);
+	parser.add<string>("cache", 'c', "osn cache", false, "");
 	parser.add<size_t>("hashes", 'h', "cuckoo hash num", false, 4);
 	parser.add<double>("scaler", '\0', "cuckoo scaler", false, 1.09);
 
@@ -177,10 +179,11 @@ Context parse_arguments(int argc, char** argv)
 	context.psu_type = parser.get<size_t>("psu");
 	context.host = parser.get<string>("host");
 	context.port = parser.get<size_t>("port");
-	context.sender_size = 1 << parser.get<size_t>("sender");
-	context.receiver_size = 1 << parser.get<size_t>("receiver");
+	context.sender_size = 1ull << parser.get<size_t>("sender");
+	context.receiver_size = 1ull << parser.get<size_t>("receiver");
 	context.num_threads = parser.get<size_t>("threads");
 	context.osn_ot_type = parser.get<size_t>("osn_ot");
+	context.osn_cache = parser.get<string>("cache");
 	context.cuckoo_hash_num = parser.get<size_t>("hashes");
 	context.cuckoo_scaler = parser.get<double>("scaler");
 
@@ -198,6 +201,7 @@ int main(int argc, char** argv)
 		<< "\nreceiver_size:" << context.receiver_size
 		<< "\nnum_threads:" << context.num_threads
 		<< "\nosn ot type:" << context.osn_ot_type
+		<< "\nosn cache:" << context.osn_cache
 		<< "\ncuckoo hash num:" << context.cuckoo_hash_num
 		<< "\ncuckoo scaler:" << context.cuckoo_scaler
 		<< "\n===arguments===\n\n";

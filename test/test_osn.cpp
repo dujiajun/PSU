@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <thread>
+#include <string>
 
 #include "cryptoTools/Network/IOService.h"
 
@@ -29,7 +30,7 @@ void sender(size_t size)
 	}
 
 	OSNSender osn;
-	osn.init(size, 1);
+	osn.init(size, 1, "benes");
 	Timer timer;
 	osn.setTimer(timer);
 	timer.setTimePoint("before run_osn");

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include "cryptoTools/Common/Defines.h"
 #include "cryptoTools/Common/BitVector.h"
 #include "cryptoTools/Common/Timer.h"
@@ -23,7 +24,7 @@ class OSNSender
  public:
 	std::vector<int> dest;
 	OSNSender(size_t size = 0, int ot_type = 0);
-	void init(size_t size, int ot_type = 0);
+	void init(size_t size, int ot_type = 0, const std::string& osn_cache = "");
 	std::vector<oc::block> run_osn(std::vector<oc::Channel>& chls);
 	void setTimer(oc::Timer& timer);
 };
