@@ -64,7 +64,7 @@ std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 		thrds[i] = std::thread(routine, i);
 	for (size_t i = 0; i < num_threads; i++)
 		thrds[i].join();
-
+	timer->setTimePoint("after compute oprf");
 	vector<block> msgs(shares.size());
 	chls[0].recv(msgs);
 	for (size_t i = 0; i < msgs.size(); i++)

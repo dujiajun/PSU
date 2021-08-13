@@ -64,7 +64,7 @@ void SSSender::output(vector<oc::Channel>& chls)
 		thrds[i] = std::thread(routine, i);
 	for (size_t i = 0; i < num_threads; i++)
 		thrds[i].join();
-
+	timer->setTimePoint("after compute oprf");
 	chls[0].asyncSend(std::move(msgs));
 
 	delete[]oprfs;
