@@ -35,19 +35,17 @@ std::vector<block> SRCReceiver::runPermuteShare(const vector<block>& x_set, std:
 }
 
 u8* SRCReceiver::runMpOprf(std::vector<Channel>& chls,
-	const vector<block>& recv_set,
-	const block& commonSeed,
-	const u64& set_size,
-	const u64& logHeight,
-	const u64& width,
-	const u64& hashLengthInBytes,
-	const u64& h1LengthInBytes,
-	const u64& bucket1,
-	const u64& bucket2)
+	const vector<block>& recv_set, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_receiver
-		.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_receiver.setParams(toBlock(123456),
+		shuffle_size,
+		log2ceil(shuffle_size),
+		width,
+		hash_length_in_bytes,
+		32,
+		1 << 8,
+		1 << 8);
 	return mp_oprf_receiver.run(prng, chls, recv_set);
 }
 
@@ -57,21 +55,11 @@ std::vector<block> SRCReceiver::output(vector<Channel>& chls)
 	vector<block> union_result;
 
 	auto shares = runPermuteShare(after_cuckoo_set, chls);
-
 	timer->setTimePoint("after runPermuteShare");
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(context.receiver_size, context.sender_size);
-
-	u8* oprfs = runMpOprf(chls,
-		shares,
-		toBlock(123456),
-		shuffle_size,
-		log2ceil(shuffle_size),
-		get_mp_oprf_width(context.receiver_size, context.sender_size),
-		hashLengthInBytes,
-		32,
-		1 << 8,
-		1 << 8);
+	auto params = getMpOprfParams(context.receiver_size, context.sender_size);
+	size_t hashLengthInBytes = params.second;
+	u8* oprfs = runMpOprf(chls, shares, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
 
 	set<PRF> oprfs_set;
@@ -82,7 +70,6 @@ std::vector<block> SRCReceiver::output(vector<Channel>& chls)
 	}
 
 	BitVector choices(context.sender_size);
-
 	vector<u8> recv_oprfs(context.cuckoo_hash_num * context.sender_size * hashLengthInBytes);
 
 	chls[0].recv(recv_oprfs);

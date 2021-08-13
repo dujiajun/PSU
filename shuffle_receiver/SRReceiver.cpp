@@ -1,7 +1,3 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
-
 #include "SRReceiver.h"
 #include <utils.h>
 #include <set>
@@ -14,10 +10,10 @@ std::vector<oc::block> SRReceiver::runPermuteShare(const std::vector<oc::block>&
 	return osn_receiver.run_osn(x_set, chls);
 }
 
-oc::u8* SRReceiver::runMpOprf(std::vector<oc::Channel>& chls, const std::vector<oc::block>& recv_set, const oc::block& commonSeed, const oc::u64& set_size, const oc::u64& logHeight, const oc::u64& width, const oc::u64& hashLengthInBytes, const oc::u64& h1LengthInBytes, const oc::u64& bucket1, const oc::u64& bucket2)
+oc::u8* SRReceiver::runMpOprf(std::vector<oc::Channel>& chls, const std::vector<oc::block>& recv_set, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_receiver.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_receiver.setParams(toBlock(123456), shuffle_size, log2ceil(shuffle_size), width, hash_length_in_bytes, 32, 1 << 8, 1 << 8);
 	return mp_oprf_receiver.run(prng, chls, recv_set);
 }
 
@@ -37,13 +33,14 @@ std::vector<block> SRReceiver::output(std::vector<Channel>& chls)
 
 	timer->setTimePoint("after runPermuteShare");
 
-	auto hashLengthInBytes = get_mp_oprf_hash_in_bytes(shuffle_size);
-	auto oprfs = runMpOprf(chls, share, toBlock(123456), shuffle_size, log2ceil(shuffle_size), get_mp_oprf_width(shuffle_size), hashLengthInBytes, 32, 1 << 8, 1 << 8);
+	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	auto hashLengthInBytes = params.second;
+	auto oprfs = runMpOprf(chls, share, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
 
 	BitVector choices(context.sender_size);
 
-	size_t &num_threads = context.num_threads;
+	size_t& num_threads = context.num_threads;
 	auto routine = [&](size_t tid)
 	{
 		for (size_t i = tid; i < context.sender_size; i += num_threads)

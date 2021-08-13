@@ -5,7 +5,7 @@
 #include <string>
 
 struct PRF
-	{
+{
 	oc::u8* data;
 	size_t len;
 	PRF() : data(nullptr), len(0)
@@ -47,16 +47,16 @@ struct PRF
 		return memcmp(data, x.data, len) < 0;
 	}
 	PRF& operator=(const PRF& x)
-		{
+	{
 		if (this == &x)return *this;
 		set(x.len, x.data);
 		return *this;
-		}
-	};
+	}
+};
 
 void PrintBuffer(void* pBuff, unsigned int nLen);
 
-struct Context 
+struct Context
 {
 	size_t role;
 	size_t psu_type;

@@ -10,10 +10,10 @@ std::vector<oc::block> SRSSender::runPermuteShare(size_t tid, size_t shuffle_siz
 	return osn_senders[tid].run_osn(tmpchls);
 }
 
-void SRSSender::runMPOPRF(std::vector<oc::Channel>& chls, const oc::block& commonSeed, const oc::u64& set_size, const oc::u64& logHeight, const oc::u64& width, const oc::u64& hashLengthInBytes, const oc::u64& h1LengthInBytes, const oc::u64& bucket1, const oc::u64& bucket2)
+void SRSSender::runMPOPRF(std::vector<oc::Channel>& chls, size_t log2size, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_sender.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_sender.setParams(toBlock(123456), 1ull << log2size, log2size, width, hash_length_in_bytes, 32, 1 << 8, 1 << 8);
 	mp_oprf_sender.run(prng, chls);
 }
 
@@ -32,7 +32,7 @@ void SRSSender::setSenderSet(const std::vector<oc::block>& sender_set, size_t re
 
 void SRSSender::output(std::vector<oc::Channel>& chls)
 {
-	
+
 	PRNG prng(oc::toBlock(123));
 	vector<vector<block>> shares(simple.mNumBins);
 	size_t& num_threads = context.num_threads;
@@ -56,8 +56,9 @@ void SRSSender::output(std::vector<oc::Channel>& chls)
 	auto total_count = simple.mNumBins * simple.mMaxBinSize;
 	auto tmp_count = log2ceil(total_count);
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(1ull << tmp_count);
-	runMPOPRF(chls, toBlock(123456), 1ull << tmp_count, tmp_count, get_mp_oprf_width(1ull << tmp_count), hashLengthInBytes, 32, 1 << 8, 1 << 8);
+	auto params = getMpOprfParams(1ull << tmp_count, 1ull << tmp_count);
+	size_t hashLengthInBytes = params.second;
+	runMPOPRF(chls, tmp_count, params.first, params.second);
 	vector<array<block, 2>> msgs(simple.mMaxBinSize * simple.mNumBins);
 
 	auto cmp_thread = [&](size_t tid)

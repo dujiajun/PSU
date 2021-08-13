@@ -11,10 +11,10 @@ std::vector<oc::block> SRSReceiver::runPermuteShare(size_t tid, const std::vecto
 	return osn_receivers[tid].run_osn(x_set, tmpchls);
 }
 
-oc::u8* SRSReceiver::runMpOprf(std::vector<oc::Channel>& chls, const std::vector<oc::block>& recv_set, const oc::block& commonSeed, const oc::u64& set_size, const oc::u64& logHeight, const oc::u64& width, const oc::u64& hashLengthInBytes, const oc::u64& h1LengthInBytes, const oc::u64& bucket1, const oc::u64& bucket2)
+oc::u8* SRSReceiver::runMpOprf(std::vector<oc::Channel>& chls, const std::vector<oc::block>& recv_set, size_t log2size, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_receiver.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_receiver.setParams(toBlock(123456), 1ull << log2size, log2size, width, hash_length_in_bytes, 32, 1 << 8, 1 << 8);
 	return mp_oprf_receiver.run(prng, chls, recv_set);
 }
 
@@ -65,8 +65,9 @@ std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
 		tmp_share[i] = shares[i / simple.mMaxBinSize][i % simple.mMaxBinSize];
 	}
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(1ull << tmp_count);
-	u8* oprfs = runMpOprf(chls, tmp_share, toBlock(123456), 1ull << tmp_count, tmp_count, get_mp_oprf_width(1ull << tmp_count), hashLengthInBytes, 32, 1 << 8, 1 << 8);
+	auto params = getMpOprfParams(1ull << tmp_count, 1ull << tmp_count);
+	size_t hashLengthInBytes = params.second;
+	u8* oprfs = runMpOprf(chls, tmp_share, tmp_count, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
 	BitVector choices(simple.mNumBins * simple.mMaxBinSize);
 

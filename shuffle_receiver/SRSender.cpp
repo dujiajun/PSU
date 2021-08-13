@@ -1,7 +1,4 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
-
+#include "SRSender.h"
 #include "SRSender.h"
 
 using namespace std;
@@ -12,10 +9,10 @@ std::vector<oc::block> SRSender::runPermuteShare(std::vector<oc::Channel>& chls)
 	return osn_sender.run_osn(chls);
 }
 
-void SRSender::runMPOPRF(std::vector<oc::Channel>& chls, const oc::block& commonSeed, const oc::u64& set_size, const oc::u64& logHeight, const oc::u64& width, const oc::u64& hashLengthInBytes, const oc::u64& h1LengthInBytes, const oc::u64& bucket1, const oc::u64& bucket2)
+void SRSender::runMPOPRF(std::vector<oc::Channel>& chls, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_sender.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_sender.setParams(toBlock(123456), shuffle_size, log2ceil(shuffle_size), width, hash_length_in_bytes, 32, 1 << 8, 1 << 8);
 	mp_oprf_sender.run(prng, chls);
 }
 
@@ -32,7 +29,8 @@ void SRSender::output(std::vector<oc::Channel>& chls)
 
 	auto share = runPermuteShare(chls);
 	timer->setTimePoint("after runPermuteShare");
-	runMPOPRF(chls, toBlock(123456), shuffle_size, log2ceil(shuffle_size), get_mp_oprf_width(shuffle_size), get_mp_oprf_hash_in_bytes(shuffle_size), 32, 1 << 8, 1 << 8);
+	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	runMPOPRF(chls, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
 	size_t& num_threads = context.num_threads;
 	auto routine = [&](size_t tid)

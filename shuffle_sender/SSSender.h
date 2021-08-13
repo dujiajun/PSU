@@ -11,18 +11,9 @@ class SSSender : public PSUSender
 	oc::MPOPRFReceiver mp_oprf_receiver;
 
 	std::vector<oc::block> runPermuteShare(const std::vector<oc::block>& x_set, std::vector<oc::Channel>& chls);
-	oc::u8* runMpOprf(std::vector<oc::Channel>& chls,
-		const std::vector<oc::block>& x_set,
-		const oc::block& commonSeed,
-		const oc::u64& set_size,
-		const oc::u64& logHeight,
-		const oc::u64& width,
-		const oc::u64& hashLengthInBytes,
-		const oc::u64& h1LengthInBytes,
-		const oc::u64& bucket1,
-		const oc::u64& bucket2);
+	oc::u8* runMpOprf(std::vector<oc::Channel>& chls, const std::vector<oc::block>& x_set, size_t width, size_t hash_length_in_bytes);
 
- public:
+public:
 	void setSenderSet(const std::vector<oc::block>& sender_set, size_t receiver_size);
 	void output(std::vector<oc::Channel>& chls);
 	void setTimer(oc::Timer& timer);

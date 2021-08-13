@@ -1,7 +1,3 @@
-//
-// Created by dujiajun on 2021/8/8.
-//
-
 #include "MP-OPRF-Parameters.h"
 #include "SSReceiver.h"
 using namespace std;
@@ -11,19 +7,17 @@ std::vector<oc::block> SSReceiver::runPermuteShare(std::vector<oc::Channel>& chl
 {
 	return osn_sender.run_osn(chls);
 }
-void SSReceiver::runMPOPRF(std::vector<oc::Channel>& chls,
-	const oc::block& commonSeed,
-	const osuCrypto::u64& set_size,
-	const osuCrypto::u64& logHeight,
-	const osuCrypto::u64& width,
-	const osuCrypto::u64& hashLengthInBytes,
-	const osuCrypto::u64& h1LengthInBytes,
-	const osuCrypto::u64& bucket1,
-	const osuCrypto::u64& bucket2)
+void SSReceiver::runMPOPRF(std::vector<oc::Channel>& chls, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_sender
-		.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_sender.setParams(toBlock(123456),
+		shuffle_size,
+		log2ceil(shuffle_size),
+		width,
+		hash_length_in_bytes,
+		32,
+		1 << 8,
+		1 << 8);
 	mp_oprf_sender.run(prng, chls);
 }
 void SSReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, size_t sender_size)
@@ -39,7 +33,7 @@ std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 	auto shares = runPermuteShare(chls);
 
 	timer->setTimePoint("after runPermuteShare");
-	
+
 	vector<int> pi_out = osn_sender.dest;
 	vector<size_t> pi_inv(pi_out.size());
 	for (size_t i = 0; i < pi_inv.size(); i++)
@@ -47,30 +41,23 @@ std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 		pi_inv[pi_out[i]] = i;
 	}
 
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(shuffle_size);
-	runMPOPRF(chls,
-		toBlock(123456),
-		shuffle_size,
-		log2ceil(shuffle_size),
-		get_mp_oprf_width(shuffle_size),
-		hashLengthInBytes,
-		32,
-		1 << 8,
-		1 << 8);
+	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	size_t hashLengthInBytes = params.second;
+	runMPOPRF(chls, params.first, params.second);
 
 	timer->setTimePoint("after runMpOprf");
-	
+
 	size_t& num_threads = context.num_threads;
 	auto routine = [&](size_t tid)
 	{
-	  for (size_t i = tid; i < shares.size(); i += num_threads)
-	  {
-		  vector<block> tmp(context.receiver_size);
-		  for (size_t j = 0; j < context.receiver_size; j++)
-			  tmp[j] = _mm_xor_si128(shares[i], receiver_set[j]);
-		  auto oprfs = mp_oprf_sender.get_oprf(tmp);
-		  chls[tid].asyncSend(std::move(oprfs));
-	  }
+		for (size_t i = tid; i < shares.size(); i += num_threads)
+		{
+			vector<block> tmp(context.receiver_size);
+			for (size_t j = 0; j < context.receiver_size; j++)
+				tmp[j] = _mm_xor_si128(shares[i], receiver_set[j]);
+			auto oprfs = mp_oprf_sender.get_oprf(tmp);
+			chls[tid].asyncSend(std::move(oprfs));
+		}
 	};
 	vector<thread> thrds(num_threads);
 	for (size_t i = 0; i < num_threads; i++)

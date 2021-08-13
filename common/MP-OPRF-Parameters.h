@@ -2,16 +2,18 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
-inline size_t get_mp_oprf_width(size_t receiver_size, size_t sender_size)
+// unbalanced
+inline size_t get_mp_oprf_width(size_t small_size, size_t big_size)
 {
-	if (sender_size >= 1ull << 12)
+	if (big_size >= 1ull << 12)
 	{
-		if (receiver_size <= 1ull << 16)
+		if (small_size <= 1ull << 16)
 		{
 			return 614;
 		}
-		else if (receiver_size <= 1ull << 20)
+		else if (small_size <= 1ull << 20)
 		{
 			return 626;
 		}
@@ -22,11 +24,11 @@ inline size_t get_mp_oprf_width(size_t receiver_size, size_t sender_size)
 	}
 	else
 	{
-		if (receiver_size <= 1ull << 16)
+		if (small_size <= 1ull << 16)
 		{
 			return 615;
 		}
-		else if (receiver_size <= 1ull << 20)
+		else if (small_size <= 1ull << 20)
 		{
 			return 627;
 		}
@@ -38,15 +40,15 @@ inline size_t get_mp_oprf_width(size_t receiver_size, size_t sender_size)
 }
 
 
-inline size_t get_mp_oprf_hash_in_bytes(size_t receiver_size, size_t sender_size)
+inline size_t get_mp_oprf_hash_in_bytes(size_t small_size, size_t big_size)
 {
-	if (sender_size >= 1ull << 12)
+	if (big_size >= 1ull << 12)
 	{
-		if (receiver_size <= 1ull << 16)
+		if (small_size <= 1ull << 16)
 		{
 			return 9;
 		}
-		else if (receiver_size <= 1ull << 20)
+		else if (small_size <= 1ull << 20)
 		{
 			return 10;
 		}
@@ -57,11 +59,11 @@ inline size_t get_mp_oprf_hash_in_bytes(size_t receiver_size, size_t sender_size
 	}
 	else
 	{
-		if (receiver_size <= 1ull << 16)
+		if (small_size <= 1ull << 16)
 		{
 			return 9;
 		}
-		else if (receiver_size <= 1ull << 20)
+		else if (small_size <= 1ull << 20)
 		{
 			return 9;
 		}
@@ -72,35 +74,40 @@ inline size_t get_mp_oprf_hash_in_bytes(size_t receiver_size, size_t sender_size
 	}
 }
 
+// balanced
 inline size_t get_mp_oprf_width(size_t size)
 {
 	if (size <= (1 << 8))
 	{
-		return 610;
+		return 592;
 	}
 	else if (size <= (1 << 10))
 	{
-		return 622;
+		return 597;
 	}
 	else if (size <= (1 << 12))
 	{
-		return 633;
+		return 603;
 	}
 	else if (size <= (1 << 14))
 	{
-		return 645;
+		return 609;
 	}
 	else if (size <= (1 << 16))
 	{
-		return 656;
+		return 615;
 	}
 	else if (size <= (1 << 18))
 	{
-		return 667;
+		return 621;
+	}
+	else if (size <= (1 << 20))
+	{
+		return 627;
 	}
 	else
 	{
-		return 678;
+		return 633;
 	}
 }
 
@@ -112,26 +119,46 @@ inline size_t get_mp_oprf_hash_in_bytes(size_t size)
 	}
 	else if (size <= (1 << 10))
 	{
-		return 9;
+		return 8;
 	}
 	else if (size <= (1 << 12))
 	{
-		return 10;
+		return 9;
 	}
 	else if (size <= (1 << 14))
 	{
-		return 11;
+		return 9;
 	}
 	else if (size <= (1 << 16))
 	{
-		return 11;
+		return 10;
 	}
 	else if (size <= (1 << 18))
 	{
-		return 12;
+		return 10;
+	}
+	else if (size <= (1 << 20))
+	{
+		return 11;
 	}
 	else
 	{
-		return 13;
+		return 11;
 	}
+}
+
+inline std::pair<size_t, size_t> getMpOprfParams(size_t small_size, size_t big_size)
+{
+	size_t width, hashLengthInBytes;
+	if (big_size == small_size)
+	{
+		width = get_mp_oprf_width(small_size);
+		hashLengthInBytes = get_mp_oprf_hash_in_bytes(small_size);
+	}
+	else
+	{
+		width = get_mp_oprf_width(small_size, big_size);
+		hashLengthInBytes = get_mp_oprf_hash_in_bytes(small_size, big_size);
+	}
+	return std::make_pair(width, hashLengthInBytes);
 }

@@ -17,19 +17,17 @@ std::vector<block> SRCSender::runPermuteShare(std::vector<Channel>& chls)
 	return osn_sender.run_osn(chls);
 }
 
-void SRCSender::runMPOPRF(std::vector<Channel>& chls,
-	const block& commonSeed,
-	const u64& set_size,
-	const u64& logHeight,
-	const u64& width,
-	const u64& hashLengthInBytes,
-	const u64& h1LengthInBytes,
-	const u64& bucket1,
-	const u64& bucket2)
+void SRCSender::runMPOPRF(std::vector<Channel>& chls, size_t width, size_t hash_length_in_bytes)
 {
 	PRNG prng(oc::toBlock(123));
-	mp_oprf_sender
-		.setParams(commonSeed, set_size, logHeight, width, hashLengthInBytes, h1LengthInBytes, bucket1, bucket2);
+	mp_oprf_sender.setParams(toBlock(123456),
+		shuffle_size,
+		log2ceil(shuffle_size),
+		width,
+		hash_length_in_bytes,
+		32,
+		1 << 8,
+		1 << 8);
 	mp_oprf_sender.run(prng, chls);
 }
 
@@ -46,17 +44,9 @@ void SRCSender::output(vector<Channel>& chls)
 	{
 		pi_inv[pi_out[i]] = i;
 	}
-
-	size_t hashLengthInBytes = get_mp_oprf_hash_in_bytes(context.receiver_size, context.sender_size);
-	runMPOPRF(chls,
-		toBlock(123456),
-		shuffle_size,
-		log2ceil(shuffle_size),
-		get_mp_oprf_width(context.receiver_size, context.sender_size),
-		hashLengthInBytes,
-		32,
-		1 << 8,
-		1 << 8);
+	auto params = getMpOprfParams(context.receiver_size, context.sender_size);
+	size_t hashLengthInBytes = params.second;
+	runMPOPRF(chls, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
 
 	vector<array<block, 2>> msgs(context.sender_size);
@@ -67,22 +57,22 @@ void SRCSender::output(vector<Channel>& chls)
 	vector<thread> thrds(num_threads);
 	auto routine = [&](size_t tid)
 	{
-	  size_t start_idx = sender_set.size() * tid / num_threads;
-	  size_t end_idx = sender_set.size() * (tid + 1) / num_threads;
-	  end_idx = ((end_idx <= sender_set.size()) ? end_idx : sender_set.size());
+		size_t start_idx = sender_set.size() * tid / num_threads;
+		size_t end_idx = sender_set.size() * (tid + 1) / num_threads;
+		end_idx = ((end_idx <= sender_set.size()) ? end_idx : sender_set.size());
 
-	  vector<block> tmp_thrd(context.cuckoo_hash_num * (end_idx - start_idx));
-	  for (size_t x = start_idx; x < end_idx; x++)
-	  {
-		  for (size_t i = 0; i < context.cuckoo_hash_num; i++)
-		  {
-			  size_t index = oc::CuckooIndex<oc::ThreadSafe>::getHash(sender_set[x], i, cuckoo.mBins.size());
-			  tmp_thrd[(x - start_idx) * context.cuckoo_hash_num + i] = _mm_xor_si128(sender_set[x], shares[pi_inv[index]]);
-		  }
+		vector<block> tmp_thrd(context.cuckoo_hash_num * (end_idx - start_idx));
+		for (size_t x = start_idx; x < end_idx; x++)
+		{
+			for (size_t i = 0; i < context.cuckoo_hash_num; i++)
+			{
+				size_t index = oc::CuckooIndex<oc::ThreadSafe>::getHash(sender_set[x], i, cuckoo.mBins.size());
+				tmp_thrd[(x - start_idx) * context.cuckoo_hash_num + i] = _mm_xor_si128(sender_set[x], shares[pi_inv[index]]);
+			}
 
-	  }
-	  vector<u8> oprfs_thrd = mp_oprf_sender.get_oprf(tmp_thrd);
-	  memcpy(oprfs.data() + start_idx * context.cuckoo_hash_num * hashLengthInBytes, oprfs_thrd.data(), oprfs_thrd.size());
+		}
+		vector<u8> oprfs_thrd = mp_oprf_sender.get_oprf(tmp_thrd);
+		memcpy(oprfs.data() + start_idx * context.cuckoo_hash_num * hashLengthInBytes, oprfs_thrd.data(), oprfs_thrd.size());
 	};
 
 	for (size_t t = 0; t < num_threads; t++)
