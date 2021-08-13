@@ -9,7 +9,6 @@ class Benes
 	std::vector<int> perm;
 	std::vector<int> inv_perm;
 	std::vector<std::vector<int>> switched;
-	static const int benes_size = 1.27 * (1 << 20);
 	std::vector<char> path;
 
 	void DFS(int idx, int route);

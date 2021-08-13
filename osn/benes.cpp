@@ -14,6 +14,7 @@ using namespace oc;
 
 void Benes::initialize(int values, int levels)
 {
+	int benes_size = 1.27 * values;
 	path.resize(benes_size);
 	perm.resize(values);
 	inv_perm.resize(values);
