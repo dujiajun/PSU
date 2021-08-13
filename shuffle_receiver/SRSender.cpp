@@ -29,7 +29,7 @@ void SRSender::output(std::vector<oc::Channel>& chls)
 
 	auto share = runPermuteShare(chls);
 	timer->setTimePoint("after runPermuteShare");
-	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	auto params = getMpOprfParams(0, context.sender_size, context.receiver_size);
 	runMPOPRF(chls, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
 	size_t& num_threads = context.num_threads;

@@ -33,7 +33,7 @@ std::vector<block> SRReceiver::output(std::vector<Channel>& chls)
 
 	timer->setTimePoint("after runPermuteShare");
 
-	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	auto params = getMpOprfParams(0, context.sender_size, context.receiver_size);
 	auto hashLengthInBytes = params.second;
 	auto oprfs = runMpOprf(chls, share, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");

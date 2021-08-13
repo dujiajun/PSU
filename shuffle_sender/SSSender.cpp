@@ -35,7 +35,7 @@ void SSSender::output(vector<oc::Channel>& chls)
 
 	timer->setTimePoint("after runPermuteShare");
 
-	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	auto params = getMpOprfParams(0, context.sender_size, context.receiver_size);
 	size_t hashLengthInBytes = params.second;
 	u8* oprfs = runMpOprf(chls, shares, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");

@@ -57,7 +57,7 @@ std::vector<block> SRCReceiver::output(vector<Channel>& chls)
 	auto shares = runPermuteShare(after_cuckoo_set, chls);
 	timer->setTimePoint("after runPermuteShare");
 
-	auto params = getMpOprfParams(context.receiver_size, context.sender_size);
+	auto params = getMpOprfParams(context.cuckoo_hash_num, context.receiver_size, context.sender_size);
 	size_t hashLengthInBytes = params.second;
 	u8* oprfs = runMpOprf(chls, shares, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");

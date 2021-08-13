@@ -41,7 +41,7 @@ std::vector<oc::block> SSReceiver::output(std::vector<oc::Channel>& chls)
 		pi_inv[pi_out[i]] = i;
 	}
 
-	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	auto params = getMpOprfParams(0, context.sender_size, context.receiver_size);
 	size_t hashLengthInBytes = params.second;
 	runMPOPRF(chls, params.first, params.second);
 

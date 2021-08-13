@@ -169,8 +169,8 @@ Context parse_arguments(int argc, char** argv)
 	parser.add<size_t>("threads", 't', "threads", false, 1);
 	parser.add<size_t>("osn_ot", 'o', "osn ot type (1:IKNP, 0:SILENT)", false, 1);
 	parser.add<string>("cache", 'c', "osn cache", false, "");
-	parser.add<size_t>("hashes", 'h', "cuckoo hash num", false, 4);
-	parser.add<double>("scaler", '\0', "cuckoo scaler", false, 1.09);
+	parser.add<size_t>("hashes", 'h', "cuckoo hash num", false, 0);
+	parser.add<double>("scaler", '\0', "cuckoo scaler", false, 1);
 
 	parser.parse_check(argc, argv);
 
@@ -205,6 +205,15 @@ int main(int argc, char** argv)
 		<< "\ncuckoo hash num:" << context.cuckoo_hash_num
 		<< "\ncuckoo scaler:" << context.cuckoo_scaler
 		<< "\n===arguments===\n\n";
+
+	if (context.psu_type == 2 || context.psu_type == 3)
+	{
+		if (context.cuckoo_hash_num == 0 || context.cuckoo_scaler == 1)
+		{
+			cout << "Bad arguments of cuckoo_hash_num and cuckoo_scaler!" << endl;
+			return 1;
+		}
+	}
 
 	if (context.role == 0)
 	{

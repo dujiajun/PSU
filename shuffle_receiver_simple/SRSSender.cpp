@@ -56,7 +56,7 @@ void SRSSender::output(std::vector<oc::Channel>& chls)
 	auto total_count = simple.mNumBins * simple.mMaxBinSize;
 	auto tmp_count = log2ceil(total_count);
 
-	auto params = getMpOprfParams(1ull << tmp_count, 1ull << tmp_count);
+	auto params = getMpOprfParams(0, 1ull << tmp_count, 1ull << tmp_count);
 	size_t hashLengthInBytes = params.second;
 	runMPOPRF(chls, tmp_count, params.first, params.second);
 	vector<array<block, 2>> msgs(simple.mMaxBinSize * simple.mNumBins);

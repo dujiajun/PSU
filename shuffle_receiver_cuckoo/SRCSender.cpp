@@ -44,7 +44,7 @@ void SRCSender::output(vector<Channel>& chls)
 	{
 		pi_inv[pi_out[i]] = i;
 	}
-	auto params = getMpOprfParams(context.receiver_size, context.sender_size);
+	auto params = getMpOprfParams(context.cuckoo_hash_num, context.receiver_size, context.sender_size);
 	size_t hashLengthInBytes = params.second;
 	runMPOPRF(chls, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");

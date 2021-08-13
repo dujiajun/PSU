@@ -51,7 +51,7 @@ std::vector<oc::block> SSCReceiver::output(std::vector<oc::Channel>& chls)
 	timer->setTimePoint("after runPermuteShareSender");
 	vector<int> pi_out = osn_sender.dest;
 
-	auto params = getMpOprfParams(context.sender_size, context.receiver_size);
+	auto params = getMpOprfParams(context.cuckoo_hash_num, context.sender_size, context.receiver_size);
 	size_t hashLengthInBytes = params.second;
 	runMPOPRF(chls, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");

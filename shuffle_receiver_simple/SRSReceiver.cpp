@@ -65,7 +65,7 @@ std::vector<oc::block> SRSReceiver::output(std::vector<oc::Channel>& chls)
 		tmp_share[i] = shares[i / simple.mMaxBinSize][i % simple.mMaxBinSize];
 	}
 
-	auto params = getMpOprfParams(1ull << tmp_count, 1ull << tmp_count);
+	auto params = getMpOprfParams(0, 1ull << tmp_count, 1ull << tmp_count);
 	size_t hashLengthInBytes = params.second;
 	u8* oprfs = runMpOprf(chls, tmp_share, tmp_count, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
