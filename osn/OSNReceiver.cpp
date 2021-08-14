@@ -108,7 +108,7 @@ std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, st
 		masks[j] = temp;
 		ret_masks[j].push_back(temp);
 	}
-	//timer->setTimePoint("after sample masks");
+
 	std::vector<std::array<std::array<osuCrypto::block, 2>, 2>> ot_messages(switches);
 	Channel& chl = chls[0];
 	if (ot_type == 0)
@@ -116,7 +116,7 @@ std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, st
 		std::vector<std::array<osuCrypto::block, 2>> tmp_messages(switches);
 		osuCrypto::BitVector bit_correction(switches);
 		silent_ot_send(tmp_messages, chls); // sample random ot blocks
-		//timer->setTimePoint("after silent_ot_send");
+
 		chl.recv(bit_correction);
 		osuCrypto::block tmp;
 		for (int k = 0; k < tmp_messages.size(); k++)
@@ -128,7 +128,7 @@ std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, st
 				tmp_messages[k][1] = tmp;
 			}
 		}
-		//timer->setTimePoint("after bit correction");
+
 		AES aes(ZeroBlock);
 
 		for (auto i = 0; i < ot_messages.size(); i++)
@@ -136,31 +136,28 @@ std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, st
 			ot_messages[i][0] = { tmp_messages[i][0], aes.ecbEncBlock(tmp_messages[i][0]) };
 			ot_messages[i][1] = { tmp_messages[i][1], aes.ecbEncBlock(tmp_messages[i][1]) };
 		}
-		//timer->setTimePoint("after aes");
 	}
 	else
 	{
 		std::vector<std::array<osuCrypto::block, 2>> tmp_messages(switches);
 		rand_ot_send(tmp_messages, chls); // sample random ot blocks
-		//timer->setTimePoint("after rand_ot_send");
+
 		AES aes(ZeroBlock);
 		for (auto i = 0; i < ot_messages.size(); i++)
 		{
 			ot_messages[i][0] = { tmp_messages[i][0], aes.ecbEncBlock(tmp_messages[i][0]) };
 			ot_messages[i][1] = { tmp_messages[i][1], aes.ecbEncBlock(tmp_messages[i][1]) };
 		}
-		//timer->setTimePoint("after aes");
 	}
 
 	std::vector<std::array<osuCrypto::block, 2>> correction_blocks(switches);
 	prepare_correction(N, values, 0, 0, masks, ot_messages, correction_blocks);
-	//timer->setTimePoint("after prepare_correction");
+
 	chl.send(correction_blocks);
 	for (int i = 0; i < values; ++i)
 	{
 		ret_masks[i].push_back(masks[i]);
 	}
-	//timer->setTimePoint("after correction_blocks");
 	return ret_masks;
 }
 

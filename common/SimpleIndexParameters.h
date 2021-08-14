@@ -4,6 +4,7 @@
 #include <cstdint>
 
 // used in shuffle receiver using simple index
+// used in shuffle sender using cuckoo index when balanced set
 inline size_t get_simple_bin_size(size_t size)
 {
 	if (size <= (1ull << 8))
@@ -40,7 +41,7 @@ inline size_t get_simple_bin_size(size_t size)
 	}
 }
 
-// used in shuffle sender using cuckoo index
+// used in shuffle sender using cuckoo index when unbalanced set
 // receiver will put elements in simple hash table using their cuckoo hashes
 inline size_t get_simple_bin_size(size_t sender_size, size_t receiver_size)
 {

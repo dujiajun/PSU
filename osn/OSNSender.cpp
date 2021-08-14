@@ -23,14 +23,12 @@ std::vector<std::array<osuCrypto::block, 2>> OSNSender::gen_benes_server_osn(int
 		osuCrypto::BitVector choices(switches.size());
 
 		silent_ot_recv(choices, tmpMsg, chls);
-		//timer->setTimePoint("after silent_ot_recv");
 		AES aes(ZeroBlock);
 
 		for (auto i = 0; i < recvMsg.size(); i++)
 		{
 			recvMsg[i] = { tmpMsg[i], aes.ecbEncBlock(tmpMsg[i]) };
 		}
-		//timer->setTimePoint("after aes");
 		osuCrypto::BitVector bit_correction = switches ^ choices;
 		chl.send(bit_correction);
 	}
@@ -38,11 +36,9 @@ std::vector<std::array<osuCrypto::block, 2>> OSNSender::gen_benes_server_osn(int
 	{
 		std::vector<osuCrypto::block> tmpMsg(switches.size());
 		rand_ot_recv(switches, tmpMsg, chls);
-		//timer->setTimePoint("after rand_ot_recv");
 		AES aes(ZeroBlock);
 		for (auto i = 0; i < recvMsg.size(); i++)
 			recvMsg[i] = { tmpMsg[i], aes.ecbEncBlock(tmpMsg[i]) };
-		//timer->setTimePoint("after aes");
 	}
 	chl.recv(recvCorr.data(), recvCorr.size());
 	block temp_msg[2], temp_corr[2];
@@ -65,12 +61,9 @@ std::vector<oc::block> OSNSender::run_osn(std::vector<oc::Channel>& chls)
 	int levels = 2 * N - 1;
 
 	std::vector<std::array<osuCrypto::block, 2>> ot_output = gen_benes_server_osn(values, chls);
-	//timer->setTimePoint("after gen_benes_server_osn");
 
 	std::vector<block> input_vec(values);
 	chls[0].recv(input_vec.data(), input_vec.size());
-
-	//timer->setTimePoint("after recv input_vec");
 
 	std::vector<std::vector<std::array<osuCrypto::block, 2>>> matrix_ot_output(
 		levels, std::vector<std::array<osuCrypto::block, 2>>(values));
@@ -82,7 +75,6 @@ std::vector<oc::block> OSNSender::run_osn(std::vector<oc::Channel>& chls)
 	}
 
 	benes.gen_benes_masked_evaluate(N, 0, 0, input_vec, matrix_ot_output);
-	//timer->setTimePoint("after gen_benes_masked_evaluate");
 	return input_vec; //share
 }
 

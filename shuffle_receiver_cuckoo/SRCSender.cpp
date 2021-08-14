@@ -81,7 +81,7 @@ void SRCSender::output(vector<Channel>& chls)
 		thrds[t].join();
 
 	timer->setTimePoint("after compute oprf");
-	chls[0].asyncSend(std::move(oprfs));
+	chls[0].send(oprfs);
 	timer->setTimePoint("after send oprf");
 	for (size_t x = 0; x < sender_set.size(); x++)
 	{

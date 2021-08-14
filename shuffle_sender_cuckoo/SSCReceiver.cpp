@@ -37,9 +37,14 @@ void SSCReceiver::setReceiverSet(const std::vector<oc::block>& receiver_set, siz
 			simple[idx].emplace_back(y);
 		}
 	}
-
-	cuckoo_max_bin_size = get_simple_bin_size(context.sender_size, context.receiver_size);
-
+	if (context.sender_size == context.receiver_size)
+	{
+		cuckoo_max_bin_size = get_simple_bin_size(context.sender_size);
+	}
+	else
+	{
+		cuckoo_max_bin_size = get_simple_bin_size(context.sender_size, context.receiver_size);
+	}
 	shuffle_size = cuckoo_bin_num;
 
 	osn_sender.init(shuffle_size, context.osn_ot_type, context.osn_cache);
@@ -91,7 +96,7 @@ std::vector<oc::block> SSCReceiver::output(std::vector<oc::Channel>& chls)
 				cuckoo_max_bin_size * hashLengthInBytes - bin_oprf_size);
 			offset += simple[bin_idx].size();
 		}
-		chls[tid].asyncSend(std::move(send_buff));
+		chls[tid].send(send_buff);
 	};
 	vector<thread> thrds(num_threads);
 	for (size_t i = 0; i < num_threads; i++)

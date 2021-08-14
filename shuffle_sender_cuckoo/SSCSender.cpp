@@ -60,16 +60,22 @@ void SSCSender::output(std::vector<oc::Channel>& chls)
 	auto shares = runPermuteShareReceiver(after_cuckoo_set, chls);
 
 	timer->setTimePoint("after runPermuteShareReceiver");
-
 	auto params = getMpOprfParams(context.cuckoo_hash_num, context.sender_size, context.receiver_size);
 	size_t hashLengthInBytes = params.second;
 	u8* oprfs = runMpOprf(chls, shares, params.first, params.second);
 	timer->setTimePoint("after runMpOprf");
-
 	vector<bool> b(shares.size());
 
 	size_t& num_threads = context.num_threads;
-	size_t max_bin_size = get_simple_bin_size(context.sender_size, context.receiver_size);
+	size_t max_bin_size;
+	if (context.sender_size == context.receiver_size)
+	{
+		max_bin_size = get_simple_bin_size(context.sender_size);
+	}
+	else
+	{
+		max_bin_size = get_simple_bin_size(context.sender_size, context.receiver_size);
+	}
 	auto routine = [&](size_t tid)
 	{
 		size_t start_idx = shares.size() * tid / num_threads;
@@ -78,7 +84,6 @@ void SSCSender::output(std::vector<oc::Channel>& chls)
 
 		vector<u8> recv_oprfs(max_bin_size * hashLengthInBytes * (end_idx - start_idx));
 		chls[tid].recv(recv_oprfs);
-
 		for (size_t i = start_idx; i < end_idx; i++)
 		{
 			set<PRF> bf;
