@@ -4,15 +4,15 @@
 #include <cryptoTools/Crypto/AES.h>
 #include <libOTe/TwoChooseOne/SilentOtExtSender.h>
 #include <libOTe/TwoChooseOne/IknpOtExtSender.h>
-#include <iterator>
+#include <cstring>
 #include <iostream>
 using namespace std;
 using namespace oc;
 void OSNReceiver::rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sendMsg, std::vector<oc::Channel>& chls)
 {
 	//std::cout << "\n OT sender!! \n";
-
 	size_t num_threads = chls.size();
+
 	size_t total_len = sendMsg.size();
 	auto routine = [&](size_t tid)
 	{
@@ -141,7 +141,6 @@ std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, st
 	{
 		std::vector<std::array<osuCrypto::block, 2>> tmp_messages(switches);
 		rand_ot_send(tmp_messages, chls); // sample random ot blocks
-
 		AES aes(ZeroBlock);
 		for (auto i = 0; i < ot_messages.size(); i++)
 		{
@@ -150,9 +149,9 @@ std::vector<std::vector<block>> OSNReceiver::gen_benes_client_osn(int values, st
 		}
 	}
 
+	cpus.store(chls.size());
 	std::vector<std::array<osuCrypto::block, 2>> correction_blocks(switches);
 	prepare_correction(N, values, 0, 0, masks, ot_messages, correction_blocks);
-
 	chl.send(correction_blocks);
 	for (int i = 0; i < values; ++i)
 	{
@@ -203,7 +202,6 @@ void OSNReceiver::prepare_correction(int n, int Val, int lvl_p, int perm_idx, st
 	int values = src.size();
 	std::vector<block> bottom1;
 	std::vector<block> top1;
-
 
 	block m0, m1, w0, w1, M0[2], M1[2], corr_mesg[2];
 	std::array<oc::block, 2> corr_block, temp_block;
@@ -308,7 +306,6 @@ void OSNReceiver::prepare_correction(int n, int Val, int lvl_p, int perm_idx, st
 		ot_output[base_idx][1] = { M1[0], M1[1] };
 		src[0] = w0;
 		src[1] = w1;
-
 		return;
 	}
 
@@ -342,8 +339,29 @@ void OSNReceiver::prepare_correction(int n, int Val, int lvl_p, int perm_idx, st
 		top1.push_back(src[values - 1]);
 	}
 
-	prepare_correction(n - 1, Val, lvl_p + 1, perm_idx, bottom1, ot_output, correction_blocks);
-	prepare_correction(n - 1, Val, lvl_p + 1, perm_idx + values / 4, top1, ot_output, correction_blocks);
+	cpus--;
+	thread top_thrd, btm_thrd;
+	if (cpus > 0)
+	{
+		top_thrd = thread(&OSNReceiver::prepare_correction, this, n - 1, Val, lvl_p + 1, perm_idx + values / 4, std::ref(top1), std::ref(ot_output), std::ref(correction_blocks));
+	}
+	else
+	{
+		prepare_correction(n - 1, Val, lvl_p + 1, perm_idx + values / 4, top1, ot_output, correction_blocks);
+	}
+	if (cpus > 0)
+	{
+		btm_thrd = thread(&OSNReceiver::prepare_correction, this, n - 1, Val, lvl_p + 1, perm_idx, std::ref(bottom1), std::ref(ot_output), std::ref(correction_blocks));
+	}
+	else
+	{
+		prepare_correction(n - 1, Val, lvl_p + 1, perm_idx, bottom1, ot_output, correction_blocks);
+	}
+	if (top_thrd.joinable())
+		top_thrd.join();
+	if (btm_thrd.joinable())
+		btm_thrd.join();
+	cpus++;
 
 	// partea inferioara
 	for (int i = 0; i < values - 1; i += 2)

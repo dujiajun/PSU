@@ -4,12 +4,14 @@
 #include "cryptoTools/Common/Defines.h"
 #include "cryptoTools/Common/Timer.h"
 #include "cryptoTools/Network/Channel.h"
+#include <atomic>
 
 class OSNReceiver
 {
 	size_t size;
 	int ot_type;
 	oc::Timer* timer;
+	std::atomic<int> cpus;
 
 	void rand_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sendMsg, std::vector<oc::Channel>& chls);
 	void silent_ot_send(std::vector<std::array<osuCrypto::block, 2>>& sendMsg, std::vector<oc::Channel>& chls);

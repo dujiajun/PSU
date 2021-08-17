@@ -18,7 +18,6 @@ vector<int> permutation;
 string ip = "127.0.0.1:12345";
 size_t num_threads = 1;
 
-
 void sender(size_t size)
 {
 	IOService ios;
@@ -45,14 +44,15 @@ void sender(size_t size)
 	cout << "Sender:" << endl;
 	cout << timer << endl;
 	size_t sent = 0, recv = 0;
-	for (auto& chl : chls)
+	for (auto &chl : chls)
 	{
 		sent += chl.getTotalDataSent();
 		recv += chl.getTotalDataRecv();
 	}
 	cout << "recv: " << recv / 1024.0 / 1024.0 << "MB sent:" << sent / 1024.0 / 1024.0 << "MB "
-		<< "total: " << (recv + sent) / 1024.0 / 1024.0 << "MB" << endl;
+		 << "total: " << (recv + sent) / 1024.0 / 1024.0 << "MB" << endl;
 	cout << IoStream::unlock;
+	session.stop();
 }
 
 void receiver(size_t size)
@@ -86,14 +86,15 @@ void receiver(size_t size)
 	cout << "Receiver:" << endl;
 	cout << timer << endl;
 	size_t sent = 0, recv = 0;
-	for (auto& chl : chls)
+	for (auto &chl : chls)
 	{
 		sent += chl.getTotalDataSent();
 		recv += chl.getTotalDataRecv();
 	}
 	cout << "recv: " << recv / 1024.0 / 1024.0 << "MB sent:" << sent / 1024.0 / 1024.0 << "MB "
-		<< "total: " << (recv + sent) / 1024.0 / 1024.0 << "MB" << endl;
+		 << "total: " << (recv + sent) / 1024.0 / 1024.0 << "MB" << endl;
 	cout << IoStream::unlock;
+	session.stop();
 }
 
 int check_result(size_t size)
@@ -109,7 +110,7 @@ int check_result(size_t size)
 	}
 	return correct_cnt;
 }
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	size_t size = 1 << atoi(argv[1]);
 	num_threads = atoi(argv[2]);

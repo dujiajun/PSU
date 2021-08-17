@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(PSU)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 20)
 
 if (MSVC)
     set(OS "win")
@@ -29,7 +29,7 @@ include_directories(mp_oprf)
 include_directories(common)
 include_directories(shuffle_receiver)
 include_directories(shuffle_receiver_cuckoo)
-include_directories(shuffle_receiver_simple)
+# include_directories(shuffle_receiver_simple)
 include_directories(shuffle_sender)
 include_directories(shuffle_sender_cuckoo)
 
@@ -65,11 +65,11 @@ add_library(src STATIC
         shuffle_receiver_cuckoo/SRCReceiver.h
         shuffle_receiver_cuckoo/SRCSender.cpp
         shuffle_receiver_cuckoo/SRCSender.h)
-add_library(srs STATIC 
-        shuffle_receiver_simple/SRSReceiver.cpp
-        shuffle_receiver_simple/SRSReceiver.h
-        shuffle_receiver_simple/SRSSender.cpp
-        shuffle_receiver_simple/SRSSender.h)
+# add_library(srs STATIC 
+#         shuffle_receiver_simple/SRSReceiver.cpp
+#         shuffle_receiver_simple/SRSReceiver.h
+#         shuffle_receiver_simple/SRSSender.cpp
+#         shuffle_receiver_simple/SRSSender.h)
 add_library(sr STATIC
         shuffle_receiver/SRReceiver.cpp
         shuffle_receiver/SRReceiver.h
