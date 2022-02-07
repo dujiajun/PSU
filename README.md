@@ -1,6 +1,6 @@
 # Private Set Union
 
-## 安装依赖
+## Install Dependencies
 
 ```shell
 git clone https://github.com/dujiajun/PSU --recursive
@@ -8,13 +8,15 @@ cd libOTe
 python build.py --setup --boost --relic
 ```
 
-## 编译libOTe
+## Compile libOTe (two ways)
 
-### Visual Studio 2019 + CMake Preset
-使用CMake Preset目的是在同一个目录下存放多个平台的库文件。
+### Visual Studio 2019/2022 + CMake Preset
+Using CMake Preset is to store multi-platform libraries in single directories. 
 
-1. 使用VS打开libOTe文件夹，创建`CMakePresets.json`配置文件。
-2. 在默认模板基础上修改`cacheVariables`，添加
+Make sure you enables **Use CMakePresets.json to drive CMake configure, build, and test** in Visual Studio settings.
+
+1. Open `libOTe` folder with Visual Studio. VS will automatically create `CMakePresets.json` file.
+2. Modify the `CMakePresets.json`, adding following items to `cacheVariables`
 ```json
 "ENABLE_NP": "ON",
 "ENABLE_KOS": "ON",
@@ -22,34 +24,35 @@ python build.py --setup --boost --relic
 "ENABLE_SILENTOT": "ON",
 "ENABLE_RELIC": "ON"
 ```
-3. 点击**生成-安装libOTe**
+3. Click **Build - Install libOTe** menu.
 
-### libOTe自带脚本
+### Scripts from libOTe
 
-找一个地方存放编译后的头文件和静态库，记为`prefix`。如果为空会自动安装到`/usr/`文件夹中。
+Choose a place to store compiled headers and static libraries, denoted by `prefix`. If empty, it will be installed in `/usr/`.
+
 ```shell
 cd libOTe
 python build.py -- -D ENABLE_RELIC=ON -D ENABLE_ALL_OT=ON --install=<prefix>
 ```
-后文记得修改`CMakeLists.txt`中的`include`和`lib`目录。
+Do not forget to modify relevant directories in PSU's `CMakeLists.txt`.
 
-## 编译PSU
+## Compile PSU (two ways)
 
-### Visual Studio 2019 + CMake Preset
-1. 使用VS打开PSU文件夹，创建`CMakePresets.json`配置文件。
-2. 在默认模板基础上修改`cacheVariables`，添加
+### Visual Studio 2019/2022 + CMake Preset
+1. Open `PSU` folder with VS.
+2. Modify the `CMakePresets.json`, adding following item to `cacheVariables`
 ```json
 "PRESET_NAME": "${presetName}"
 ```
-3. 点击**生成-全部生成**即可。
+3. Click **Build - Build All** Menu.
 
-### 自行调用CMake
+### Only CMake
 
-自行设定`PRESET_NAME`或者修改`CMakeLists.txt`
+Set the variable `PRESET_NAME` or modify `CMakeLists.txt`.
 
 ```shell
 mkdir build
 cd
-cmake .. -D PRESET_NAME=<>
+cmake .. -D PRESET_NAME=<PRESET_NAME>
 make
 ```
