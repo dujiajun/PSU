@@ -30,6 +30,7 @@ include_directories(common)
 include_directories(shuffle_receiver)
 include_directories(shuffle_receiver_cuckoo)
 # include_directories(shuffle_receiver_simple)
+# include_directories(benes)
 include_directories(shuffle_sender)
 include_directories(shuffle_sender_cuckoo)
 
@@ -70,6 +71,25 @@ add_library(src STATIC
 #         shuffle_receiver_simple/SRSReceiver.h
 #         shuffle_receiver_simple/SRSSender.cpp
 #         shuffle_receiver_simple/SRSSender.h)
+# add_library(benes STATIC 
+#         benes/OPVReceiver.cpp
+#         benes/OPVReceiver.h
+#         benes/OPVSender.cpp
+#         benes/OPVSender.h
+#         benes/STReceiver.cpp
+#         benes/STReceiver.h
+#         benes/STSender.cpp
+#         benes/STSender.h
+#         benes/Permutation.cpp
+#         benes/Permutation.h
+#         benes/PermutationLayer.cpp
+#         benes/PermutationLayer.h
+#         benes/BenesNetwork.cpp
+#         benes/BenesNetwork.h
+#         benes/BenesPSSender.cpp
+#         benes/BenesPSSender.h
+#         benes/BenesPSReceiver.cpp
+#         benes/BenesPSReceiver.h)
 add_library(sr STATIC
         shuffle_receiver/SRReceiver.cpp
         shuffle_receiver/SRReceiver.h
@@ -86,6 +106,9 @@ add_library(ssc STATIC
         shuffle_sender_cuckoo/SSCReceiver.cpp
         shuffle_sender_cuckoo/SSCReceiver.h)
 
+# add_executable(test_benes
+#         test/test_benes.cpp)
+
 add_executable(test_osn
         test/test_osn.cpp)
 
@@ -94,3 +117,4 @@ add_executable(test_psu
 
 target_link_libraries(test_psu ss ssc sr src common osn mp_oprf ${MY_LIBS} ${Boost_LIBRARIES})
 target_link_libraries(test_osn osn ${MY_LIBS} ${Boost_LIBRARIES})
+# target_link_libraries(test_benes benes ${MY_LIBS} ${Boost_LIBRARIES})
