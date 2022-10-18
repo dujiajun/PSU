@@ -1,10 +1,24 @@
 # Private Set Union
 
+## 测试环境
+
+代码和教程在 Ubuntu 20.04 系统上，使用 g++ 9.4 和 CMake 3.24 构建。
 ## 安装依赖
 
 ```shell
-git clone https://github.com/dujiajun/PSU --recursive
+git clone https://github.com/dujiajun/PSU
+cd PSU
+
+git clone https://github.com/osu-crypto/libOTe
 cd libOTe
+git checkout 3a40823f0507710193d5b90e6917878853a2f836
+
+git clone https://github.com/ladnir/cryptotools
+cd cryptotools
+git checkout 4a83de286d05669678364173f9fdfe45a44ddbc6
+
+cd ..
+# in PSU/libOTe
 python build.py --setup --boost --relic
 ```
 
@@ -26,12 +40,12 @@ python build.py --setup --boost --relic
 
 ### libOTe自带脚本
 
-找一个地方存放编译后的头文件和静态库，记为`prefix`。如果为空会自动安装到`/usr/`文件夹中。
+找一个地方存放编译后的头文件和静态库，这里使用`/path_to_PSU/libOTe/out/install/linux`。如果为空会自动安装到`/usr/local`文件夹中。
 ```shell
 cd libOTe
-python build.py -- -D ENABLE_RELIC=ON -D ENABLE_ALL_OT=ON --install=<prefix>
+python build.py --install=/path_to_PSU/libOTe/out/install/linux -- -D ENABLE_RELIC=ON -D ENABLE_NP=ON -D ENABLE_KOS=ON -D ENABLE_IKNP=ON -D ENABLE_SILENTOT=ON
 ```
-后文记得修改`CMakeLists.txt`中的`include`和`lib`目录。
+如果更改了 install 地址，后文记得修改`CMakeLists.txt`中的`include`和`lib`目录。
 
 ## 编译PSU
 
@@ -45,11 +59,11 @@ python build.py -- -D ENABLE_RELIC=ON -D ENABLE_ALL_OT=ON --install=<prefix>
 
 ### 自行调用CMake
 
-自行设定`PRESET_NAME`或者修改`CMakeLists.txt`
+自行设定`PRESET_NAME`（如果上节安装到了 `/path_to_PSU/libOTe/out/install/linux`，`PRESET_NAME` 应该填 `linux`）或者修改 `CMakeLists.txt` 到你的地址。
 
 ```shell
-mkdir build
-cd
-cmake .. -D PRESET_NAME=<>
+mkdir build # in PSU dir
+cd build
+cmake .. -D PRESET_NAME=linux
 make
 ```

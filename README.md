@@ -1,10 +1,25 @@
 # Private Set Union
 
+## Tested Environment
+
+This code and following instruction is tested on Ubuntu 20.04, with g++ 9.4 and CMake 3.24.
+
 ## Install Dependencies
 
 ```shell
-git clone https://github.com/dujiajun/PSU --recursive
+git clone https://github.com/dujiajun/PSU
+cd PSU
+
+git clone https://github.com/osu-crypto/libOTe
 cd libOTe
+git checkout 3a40823f0507710193d5b90e6917878853a2f836
+
+git clone https://github.com/ladnir/cryptotools
+cd cryptotools
+git checkout 4a83de286d05669678364173f9fdfe45a44ddbc6
+
+cd ..
+# in PSU/libOTe
 python build.py --setup --boost --relic
 ```
 
@@ -28,13 +43,13 @@ Make sure you enables **Use CMakePresets.json to drive CMake configure, build, a
 
 ### Scripts from libOTe
 
-Choose a place to store compiled headers and static libraries, denoted by `prefix`. If empty, it will be installed in `/usr/`.
+Choose a place to store compiled headers and static libraries, denoted by `/path_to_PSU/libOTe/out/install/linux`. If empty, it will be installed in `/usr/local`.
 
 ```shell
 cd libOTe
-python build.py -- -D ENABLE_RELIC=ON -D ENABLE_ALL_OT=ON --install=<prefix>
+python build.py --install=/path_to_PSU/libOTe/out/install/linux -- -D ENABLE_RELIC=ON -D ENABLE_NP=ON -D ENABLE_KOS=ON -D ENABLE_IKNP=ON -D ENABLE_SILENTOT=ON
 ```
-Do not forget to modify relevant directories in PSU's `CMakeLists.txt`.
+If you change the install dir, do not forget to modify relevant directories in PSU's `CMakeLists.txt`.
 
 ## Compile PSU (two ways)
 
@@ -48,11 +63,11 @@ Do not forget to modify relevant directories in PSU's `CMakeLists.txt`.
 
 ### Only CMake
 
-Set the variable `PRESET_NAME` or modify `CMakeLists.txt`.
+Set the variable `PRESET_NAME` (If install dir is `/path_to_PSU/libOTe/out/install/linux`, `PRESET_NAME` will be `linux`) or modify `CMakeLists.txt`.
 
 ```shell
-mkdir build
-cd
-cmake .. -D PRESET_NAME=<PRESET_NAME>
-make
+mkdir build # in PSU dir
+cd build
+cmake .. -D PRESET_NAME=linux
+make -j
 ```
